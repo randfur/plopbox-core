@@ -1,10 +1,10 @@
 # plopbox-core
 PlopBox File Manager v0.1
 Plopbox-Core Installation Guide v1.0
-Last Edited: 122016HE-03-10T00:17:06+00:00
+Last Edited 122016-03-10T15:35:21+00:00
 -
 
-*Installation Instructions*
+## Installation Instructions
 
  1. Unzip the contents of "plopbox-core.zip" into the top-level directory of your document root.
 (Or the highest level directory you would like PlopBox to be able to browse)
