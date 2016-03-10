@@ -1,0 +1,249 @@
+/*
+PlopBox Stylesheet
+*/
+
+@import url('//fonts.googleapis.com/css?family=Oswald');
+@import url('//fonts.googleapis.com/css?family=Poiret+One');
+@import url('//fonts.googleapis.com/css?family=Ubuntu+Mono:700');
+
+.header {
+  background-color:#e6e6ff;
+  padding-bottom:8px;
+  padding-top:20px;
+  width:100%;
+  height:80px;
+  border-bottom:2px solid #bfbfbf;
+  box-shadow:0px 3px 5px grey;
+}
+
+.logo {
+  position:absolute;
+  margin:5px;
+  margin-left:10px;
+  font-family:'Poiret One';
+  font-size:58px;
+  text-shadow: 1px 2px 3px grey;
+}
+
+.controlsrow {
+position:relative;
+float:right;
+padding:8px;
+width:auto;
+}
+
+.dialogbox {
+    top: 0; left: 0; bottom: 0; right: 0;
+	position:fixed;
+	margin:auto;
+	width:300px;
+	height:150px;
+	background-color: lightgray;
+  box-shadow:0px 1px 9px black;
+  border:1px solid black;
+	z-index:2;
+	visibility:hidden;
+}
+
+.titlebar {
+  position:absolute;
+  display:inline;
+  left:0;
+  top:0;
+  width:298px;
+  height:22px;
+  background-color:#e6e6ff;
+  border-bottom:1px solid darkgrey;
+  font-family:"Ubuntu Mono";
+  font-size:.95em;
+}
+
+.fileclose {
+position: absolute;
+  right:1px;
+  top:1px;
+	width:20px;
+}
+
+.boxwrapper {
+position: relative;
+top: 50%;
+    left: 50%;
+    margin-right: -50%;
+	transform: translate(-50%, -50%);
+	z-index:3;
+}
+
+.dimthelights {
+z-index:1;
+position:fixed;
+margin:-28px;
+top:-5px;
+width:110%;
+height:110%;
+opacity:0.8;
+visibility:hidden;
+}
+
+.path {
+  font-family:"Ubuntu Mono";
+  width:100%;
+  background-color:#edf1f5;
+  border-bottom:1px solid lightgrey;
+  padding-left:10px;
+  padding-bottom:2px;
+}
+
+.dirempty {
+  text-align:center;
+}
+
+.columns {
+  display:block;
+  font-family:"Ubuntu Mono";
+  margin-top:10px;
+  min-width:580px;
+  margin-left:auto;
+  margin-right:auto;
+  border-bottom:2px solid #edf1f5;
+  width:95%;
+  height:20px;
+}
+
+.cname {
+  display:inline;
+  position:relative;
+  float:left;
+  left:53px;
+}
+
+.ctime {
+  display:inline;
+  position:relative;
+  float:right;
+  right:30%;
+  width:auto;
+}
+
+.csize {
+  display:inline;
+  position:relative;
+  float:right;
+  clear:right;
+  right:12px;
+  margin-top:-16px;
+  width:auto;
+}
+
+.sizefactor {
+  display:inline;
+  font-size:.75em;
+}
+
+.entry {
+  display:block;
+  width:95%;
+  margin-left:auto;
+  margin-right:auto;
+  height:43px;
+  padding:5px 0;
+  border-bottom:1px solid #edf1f5;
+  -webkit-transition:background 300ms ease;
+     -moz-transition:background 300ms ease;
+      -ms-transition:background 300ms ease;
+       -o-transition:background 300ms ease;
+          transition:background 300ms ease;
+}
+
+.entry:hover {
+  background-color:#edf1f5;
+}
+
+.selectors {
+  display:block;
+  position:absolute;
+  visibility:hidden;
+  float:left;
+  width:auto;
+  margin-top:10px;
+}
+
+.icon {
+  display:block;
+  position:absolute;
+  width:auto;
+  margin-left:15px;
+}
+
+.name {
+  display:inline;
+  position:relative;
+  float:left;
+  left:53px;
+  margin-top:8px;
+  width:auto;
+}
+
+.mtime {
+  display:inline;
+  position:relative;
+  float:right;
+  right:30%;
+  margin-top:8px;
+  width:auto;
+}
+
+.size {
+  display:inline;
+  position:relative;
+  float:right;
+  clear:right;
+  right:12px;
+  margin-top:-16px;
+  width:auto;
+}
+
+* {
+	margin:0;
+	padding:0;
+	-webkit-box-sizing:border-box;
+	   -moz-box-sizing:border-box;
+	       box-sizing: border-box;
+}
+
+html {
+	min-height:100%;
+  min-width:650px;
+	color:#61666c;
+	font-weight:400;
+	font-size:1em;
+	font-family:'Oswald';
+	line-height:1em;
+}
+body {
+  padding-bottom:20px;
+  min-width:630px;
+	-webkit-backface-visibility:hidden;
+}
+code {
+	font-family:consolas,monospace;
+}
+a {
+	color:#61666c;
+	text-decoration:none;
+}
+a:hover {
+	color:#2a2a2a;
+}
+
+.wrapper {
+	padding-top:5px;
+	width:100%;
+  min-width:630px;
+  overflow:visible;
+}
+
+.footer {
+	text-align:center;
+	font-size:.75em;
+}
