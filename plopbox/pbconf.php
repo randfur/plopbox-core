@@ -4,7 +4,7 @@
 // $droot: Enter the full filesystem path of your HTTP document-root.
 //Do NOT include a trailing slash!
 //Example Path: "C:/Apache/htdocs";
-$droot="D:/68k";
+$droot="C:/Apache/htdocs";
 
 // $timezone: Enter desired timezone to display in file modification times.
 //See http://php.net/manual/en/timezones.php for all compatible timezone values.
