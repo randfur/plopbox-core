@@ -6,7 +6,7 @@ Last Edited 122016-03-10T15:35:21+00:00
 
 ## Installation Instructions
 
- 1. Unzip the contents of "plopbox-core.zip" into the top-level directory of your document root.
+ 1. Unzip the contents of "master.zip" into the top-level directory of your document root.
 (Or the highest level directory you would like PlopBox to be able to browse)
 (In Apache by default this is /htdocs)
 
