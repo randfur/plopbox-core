@@ -1,16 +1,15 @@
 <?php
 // PlopBox File Indexing Core
-
 $start = explode(' ', microtime())[0] + explode(' ', microtime())[1];
 // Format URI & define default variables
 include "/plopbox/pbconf.php";
-$interlink = strstr( $_SERVER['REQUEST_URI'], "?", true ) ?: $_SERVER['REQUEST_URI'];
-$interlink = urldecode($interlink);
+$interlink = urldecode(strstr( $_SERVER['REQUEST_URI'], "?", true ) ?: $_SERVER['REQUEST_URI']);
+$interlink = rtrim($interlink, "index.php");
 $host = ('http://' . $_SERVER['SERVER_NAME']);
 echo '<link rel="shortcut icon" href="/plopbox/icons/favicon.gif" type="image/x-icon"/>';
 date_default_timezone_set( $timezone );
 
-// Stop if current directory is an excluded directory
+// Stop execution if current directory is an excluded directory
 if (preg_match($folderexclude, $interlink) === 1) { exit('ACCESS DENIED'); }
 
 // Check sort argument
@@ -33,18 +32,19 @@ if ($simplemode === 1) {
     echo '<table><tr><td> </td><td><b>Name</b></td><td><b>Last Modified</b></td><td><b>Size</b></td></tr>';
 } else if ($simplemode === 0){
   include '/plopbox/header.html';
-  echo '<div class="path">  ' . $interlink . '</div>';
+  echo '<div class="path">Browsing ' . $interlink . '</div>';
   echo '<link rel="stylesheet" type="text/css" href=' . $host . '/plopbox/style.css />';
   echo '<div class="columns"><div class="cname">Name</div><div class="ctime">Last Modified</div><div class="csize">Size</div></div><br>';
 }
 // Scan current directory
-$dcont= scandir(($droot . $interlink), $sort);
-if (isset($dcont['3']) === FALSE) {
+$dcont = scandir(($droot . $interlink), $sort);
+if (isset($dcont['2']) === FALSE) {
   echo '<h1 class="dirempty">Directory Empty</h1>';
 } else {
-foreach ($dcont as $file) {
+  foreach ($dcont as $file) {
     // Skip unwanted entries
     if (preg_match($fileexclude, $file) === 1) { continue; }
+    // Define target file
 	$ftarget = ($droot . '/' . $interlink . $file);
 // Inherit simplemode URI arguments
 $link = $file;
@@ -57,15 +57,17 @@ if (is_dir($ftarget)) {
   }
 }
 }
-  // Assign filetype icon
+  // Assign file icon
 	if (is_dir($ftarget)) {
-		$ficon = ($host . '/plopbox/icons/dir.gif');
+		$ficon = ($host . '/plopbox/icons/directory/folder.png');
 	} else {
-		$extensioncheck = (pathinfo($ftarget, PATHINFO_EXTENSION));
-		if ($extensioncheck ==! "") {
-			$ficon =  ($host . '/plopbox/icons/' . $extensioncheck . '.gif');
+    $mime = strstr(finfo_file(finfo_open(FILEINFO_MIME), $ftarget ), ';', true);
+    $mime = str_replace('/', '-', $mime);
+    if ($mimedebug === 1) {echo $mime;}
+		if (in_array($mime, $mimetypes)) {
+			$ficon =  ($host . '/plopbox/icons/mimetypes/' . $mime . '.png');
 		} else {
-			$ficon = ($host . '/plopbox/icons/default.gif');
+			$ficon = ($host . '/plopbox/icons/mimetypes/application-x-zerosize.png');
     }
 		}
   // Generate filesize
