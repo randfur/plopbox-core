@@ -1,6 +1,6 @@
 PlopBox File Manager v0.1
 Plopbox-Core Installation Guide v1.0
-Last Edited 2016-03-17T21:51:11+00:00
+Last Edited 2016-03-18T23:52:38+00:00
 -
 
 *Installation Instructions*
@@ -13,4 +13,4 @@ Last Edited 2016-03-17T21:51:11+00:00
 (In Apache by default this is C:/Apache/htdocs/index.php)
 
  3. Edit "pbconf.php" and configure the variables accordingly, following the instructions in the file.
-(Only the "$droot" and "$timezone" variables must be set in order for PlopBox to function)
+(Only the "$droot", "$timezone", and "$logpath" variables must be correctly set up in order for PlopBox to function)
