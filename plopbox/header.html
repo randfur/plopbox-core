@@ -24,9 +24,9 @@ function selectionmodeoff() {
   document.getElementsByClassName("selectors").style.visibility = "hidden";
 }
 </script>
-<div class="header"><div class="logo">plopbox</div><div class="controlsrow"><a href=".."><img id="updir" title="Go Up a Directory" src="/plopbox/icons/up.gif"></a><img id="newdir" title="Create a New Folder" onclick="newfolderopen()" src="/plopbox/icons/newfolder.gif"><img id="newfile" title="Upload a File" onclick="uploadopen()" src="/plopbox/icons/uploadfile.gif"><img id="selectfiles" title="Select Multiple Files" onclick="selectionmodeon()" src="/plopbox/icons/selectfiles.gif"><img id="del" title="Move an Item to the Trash" src="/plopbox/icons/delete.gif"></div></div>
+<div class="header"><div class="logo">plopbox</div><div class="controlsrow"><a href=".."><img id="updir" title="Go Up a Directory" src="/plopbox/icons/controls/up.gif"></a><img id="newdir" title="Create a New Folder" onclick="newfolderopen()" src="/plopbox/icons/controls/newfolder.gif"><img id="newfile" title="Upload a File" onclick="uploadopen()" src="/plopbox/icons/controls/uploadfile.gif"><img id="selectfiles" title="Select Multiple Files" onclick="selectionmodeon()" src="/plopbox/icons/controls/selectfiles.gif"><img id="del" title="Move an Item to the Trash" src="/plopbox/icons/controls/delete.gif"></div></div>
 <div align="Center" id="uploadbox" style="visibility:hidden;" class="dialogbox">
-<div class="titlebar">Upload File<img class="fileclose" onclick="uploadclose()" src="/plopbox/icons/close.png"></div>
+<div class="titlebar">Upload File<img class="fileclose" onclick="uploadclose()" src="/plopbox/icons/controls/close.png"></div>
 <div class="boxwrapper">
 <form action="/plopbox/uploader.php" method="post" enctype="multipart/form-data">
     Select file to upload:<br>
@@ -36,7 +36,7 @@ function selectionmodeoff() {
 </div>
 </div>
 <div align="Center" id="newfolderbox" style="visibility:hidden;" class="dialogbox">
-<div class="titlebar">New Folder<img class="fileclose" onclick="newfolderclose()" src="/plopbox/icons/close.png"></div>
+<div class="titlebar">New Folder<img class="fileclose" onclick="newfolderclose()" src="/plopbox/icons/controls/close.png"></div>
 <div class="boxwrapper">
 <form action="/plopbox/newfolder.php" method="post" enctype="multipart/form-data">
     Name of new folder:<br>
@@ -46,7 +46,7 @@ function selectionmodeoff() {
 </div>
 </div>
 <div align="Center" id="trashbox" style="visibility:hidden;" class="dialogbox">
-<div class="titlebar">Move Files to Trash<img class="fileclose" onclick="trashboxclose()" src="/plopbox/icons/close.png"></div>
+<div class="titlebar">Move Files to Trash<img class="fileclose" onclick="trashboxclose()" src="/plopbox/icons/controls/close.png"></div>
 <div class="boxwrapper">
 <form action="/plopbox/newfolder.php" method="post" enctype="multipart/form-data">
     Name of new folder:<br>
@@ -55,4 +55,3 @@ function selectionmodeoff() {
 </form>
 </div>
 </div>
-<div class="wrapper">
