@@ -51,13 +51,19 @@ if ($simplemode === 1) {
 // Scan directory specified in the URI
 $directories = "";
 $files = "";
+$count = "0";
 $dcont = scandir(($droot . $interlink), $sort);
 if (isset($dcont['2']) === FALSE) {
   echo '<div class="dirempty">Directory Empty</div>';
+  $logmsg .= 'OK EMPTY ' . PHP_EOL;
 } else {
   foreach ($dcont as $file) {
-    // Omit specific files
-    if (preg_match($fileexclude, $file) === 1) { continue; }
+    // Skip excluded files, and count non-excluded files.
+    if (preg_match($fileexclude, $file) === 1) {
+      continue;
+    } else {
+      $count++;
+    }
     // Define the target file
 	$ftarget = ($droot . '/' . $interlink . $file);
 // Inherit simplemode URI arguments for directory link
@@ -113,22 +119,20 @@ if (is_dir($ftarget)) {
 // Output file index arrays
 echo $directories;
 echo $files;
-$logmsg .= 'OK' . PHP_EOL;
+$logmsg .= 'OK ' . $count . ' ITEMS ' . PHP_EOL;
 }
 
-// Write to log
+// Write to access log
 @fwrite($logfile, $logmsg);
 @fclose($logfile);
 
-// Simple mode link
+// Begin footer
 if ($simplemode === 1){
   echo '</table>';
-  echo ('<br></div><div class="footer"><a href="' . $interlink .'?simple=0">Deactivate Simple Mode (Turn CSS & JS On)</a>');
+  echo ('<br></div><div class="footer">' . $count . ' Items in Directory<br><a href="' . $interlink .'?simple=0">Deactivate Simple Mode (Turn CSS & JS On)</a>');
 } else if ($simplemode === 0){
-  echo ('<br></div><div class="footer"><a href="' . $interlink . '?simple=1">Activate Simple Mode (Turn CSS & JS Off)</a>');
+  echo ('<br></div><div class="footer">' . $count . ' Items in Directory<br><a href="' . $interlink . '?simple=1">Activate Simple Mode (Turn CSS & JS Off)</a>');
 }
-
-// Footer
 include '/plopbox/footer.html';
 echo('<br>Index generated in ' . round((explode(' ', microtime())[0] + explode(' ', microtime())[1]) - $start, 4) . ' seconds.</div>');
 ?>
