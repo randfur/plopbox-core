@@ -20,7 +20,7 @@ if (preg_match($folderexclude, $interlink) === 1) {
 
 // Parse ?sort URI argument
 if (isset($_GET['sort'])) {
-  if ($_GET['sort'] === 1) { $sort = str_replace('1', SCANDIR_SORT_DESCENDING, $_GET['sort']); }
+  if ($_GET['sort'] == 1) { $sort = str_replace('1', SCANDIR_SORT_DESCENDING, $_GET['sort']); }
   $sortval = $_GET['sort'];
 } else {
   $sortval = 0;
