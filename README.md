@@ -1,21 +1,25 @@
-# plopbox-core
-
-PlopBox File Manager v0.1
-
-Plopbox-Core Installation Guide v1.0
-
-Last Edited 2016-03-18T23:52:38+00:00
+# PlopBox File Manager/Browser
+## Plopbox-Core Installation Guide v1.1
 
 -
 
-## Installation Instructions
+###### Pre-Requisites
+
+**PlopBox _requires_ the following software to be installed & correctly configured:**
+- SQLite 3
+- Apache HTTP Server, or compatible equivalent.
+- Apache's "mod_mime.so" module, or compatible equivalent.
+
+-
+
+###### Installation Instructions
 
  1. Unzip the contents of "master.zip" into the top-level directory of your document root.
 (Or the highest level directory you would like PlopBox to be able to browse)
 (In Apache by default this is C:/Apache/htdocs)
 
- 2. Specify the absolute path of "index.php" as the Directory Index in your HTTP server.
+ 2. Specify the absolute filesystem path of "index.php" as the Directory Index in your HTTP server.
 (In Apache by default this is C:/Apache/htdocs/index.php)
 
- 3. Edit "pbconf.php" and configure the variables accordingly, following the instructions in the file.
-(Only the "$droot", "$timezone", and "$logpath" variables must be correctly set up in order for PlopBox to function)
+ 3. Edit "/plopbox/pbconf.php" and configure the variables accordingly, following the instructions in the file.
+(Configuration of this file is *required*. PlopBox will not function otherwise.)
