@@ -1,4 +1,4 @@
-<script type="text/javascript" src="/plopbox/jquery-1.12.1.min.js"></script>
+<script type="text/javascript" src="/plopbox/jquery/jquery-1.12.1.min.js"></script>
 <div id="dimthelights" class="dimthelights" style="visibility:hidden;"></div>
 <script type="text/javascript">
 function uploadopen() {
@@ -24,34 +24,4 @@ function selectionmodeoff() {
   document.getElementsByClassName("selectors").style.visibility = "hidden";
 }
 </script>
-<div class="header"><div class="logo">plopbox</div><div class="controlsrow"><a href=".."><img id="updir" title="Go Up a Directory" src="/plopbox/icons/controls/up.gif"></a><img id="newdir" title="Create a New Folder" onclick="newfolderopen()" src="/plopbox/icons/controls/newfolder.gif"><img id="newfile" title="Upload a File" onclick="uploadopen()" src="/plopbox/icons/controls/uploadfile.gif"><img id="selectfiles" title="Select Multiple Files" onclick="selectionmodeon()" src="/plopbox/icons/controls/selectfiles.gif"><img id="del" title="Move an Item to the Trash" src="/plopbox/icons/controls/delete.gif"></div></div>
-<div align="Center" id="uploadbox" style="visibility:hidden;" class="dialogbox">
-<div class="titlebar">Upload File<img class="fileclose" onclick="uploadclose()" src="/plopbox/icons/controls/close.png"></div>
-<div class="boxwrapper">
-<form action="/plopbox/uploader.php" method="post" enctype="multipart/form-data">
-    Select file to upload:<br>
-    <input type="file" name="fileToUpload" id="fileToUpload"><br>
-    <input type="submit" value="Upload" name="submitfile">
-</form>
-</div>
-</div>
-<div align="Center" id="newfolderbox" style="visibility:hidden;" class="dialogbox">
-<div class="titlebar">New Folder<img class="fileclose" onclick="newfolderclose()" src="/plopbox/icons/controls/close.png"></div>
-<div class="boxwrapper">
-<form action="/plopbox/newfolder.php" method="post" enctype="multipart/form-data">
-    Name of new folder:<br>
-    <input type="text" name="foldername" id="foldername"><br>
-    <input type="submit" value="Make Folder" name="submitfolder">
-</form>
-</div>
-</div>
-<div align="Center" id="trashbox" style="visibility:hidden;" class="dialogbox">
-<div class="titlebar">Move Files to Trash<img class="fileclose" onclick="trashboxclose()" src="/plopbox/icons/controls/close.png"></div>
-<div class="boxwrapper">
-<form action="/plopbox/newfolder.php" method="post" enctype="multipart/form-data">
-    Name of new folder:<br>
-    <input type="text" name="foldername" id="foldername"><br>
-    <input type="submit" value="Make Folder" name="submitfolder">
-</form>
-</div>
-</div>
+<div class="header"><div class="logo">plopbox</div><div class="controlsrow"><a href=".."><img id="updir" title="Go Up a Directory" src="/plopbox/images/controls/up.gif"></a><img id="newdir" title="Create a New Folder" onclick="newfolderopen()" src="/plopbox/images/controls/newfolder.gif"><img id="newfile" title="Upload a File" onclick="uploadopen()" src="/plopbox/images/controls/uploadfile.gif"><img id="selectfiles" title="Select Multiple Files" onclick="selectionmodeon()" src="/plopbox/images/controls/selectfiles.gif"><img id="del" title="Move an Item to the Trash" src="/plopbox/images/controls/delete.gif"></div></div>

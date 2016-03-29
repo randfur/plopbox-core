@@ -1,21 +1,78 @@
 <?php
-// PlopBox File Indexing Core
-$start = explode(' ', microtime())[0] + explode(' ', microtime())[1];
-// Initialize core runtime variables
-include "/plopbox/pbconf.php";
-date_default_timezone_set( $timezone );
+// PlopBox FileBrowser Index Generator
+
+// Initialize core variables
+require "/plopbox/pbconf.php";
+require "/plopbox/pbfunc.php";
 $interlink = urldecode(strstr( $_SERVER['REQUEST_URI'], "?", true ) ?: $_SERVER['REQUEST_URI']);
-$interlink = rtrim($interlink, "index.php");
 $host = ('http://' . $_SERVER['SERVER_NAME']);
-$logfile = @fopen($logpath . "access.txt", "a") or syslog(LOG_ERR, 'PlopBox: ERROR writing PlopBox access log! Make sure filesystem permissions for PHP are set to read/write in the specified log directory.');
-$logmsg = date("M d Y, G:i:s e", $_SERVER['REQUEST_TIME']) . ' | ' . $_SERVER['REMOTE_ADDR'] . ' | ' . $_SERVER['HTTP_USER_AGENT'] . ' -> ' . $host . $interlink . ' | ';
+$logmsg2 = $logmsg3 = $directories = $files = $stoperror = "";
+
+// Setup timezone
+if (empty($timezone) == 0) {
+  date_default_timezone_set($timezone);
+} else if (empty($timezone) == 1){
+  $logmsg3 .= ' ERROR: $timezone variable not set in pbconf.php! Defaulting to UTC.';
+  date_default_timezone_set("UTC");
+}
+
+// Format log entry
+$logmsg = date("M d Y, G:i:s e", $_SERVER['REQUEST_TIME']) . ' - ' . $_SERVER['REMOTE_ADDR'] . ' - ' . $_SERVER['HTTP_USER_AGENT'] . ' > ' . $host . $interlink . ' | STATUS: ';
+
+// Log write error
+function logerror() {
+  echo 'ERROR writing PlopBox log!';
+  $logmsg2 = 'ERROR writing PlopBox log!';
+  syslog(LOG_ERR, 'PlopBox: ERROR writing PlopBox log!');
+}
+
+// Stop execution if any vital extensions or variables are unloaded or undefined
+if (!extension_loaded('fileinfo')) {
+  $logmsg .= " ERROR: php_fileinfo extension not loaded!";
+  $logmsg2 .= " ERROR: php_fileinfo extension not loaded!<br>";
+  $stoperror = true;
+}
+if (!extension_loaded('pdo_sqlite')) {
+  $logmsg .= " ERROR: php_pdo_sqlite extension not loaded!";
+  $logmsg2 .= " ERROR: php_pdo_sqlite extension not loaded!<br>";
+  $stoperror = true;
+}
+if (!extension_loaded('sqlite3')) {
+  $logmsg .= " ERROR: php_sqlite3 extension not loaded!";
+  $logmsg2 .= " ERROR: php_sqlite3 extension not loaded!<br>";
+  $stoperror = true;
+}
+if (empty($secret)) {
+  $logmsg .= ' ERROR: $secret variable not set in pbconf.php!';
+  $logmsg2 .= ' ERROR: $secret variable not set in pbconf.php!<br>';
+  $stoperror = true;
+}
+if (empty($droot)) {
+  $logmsg .= ' ERROR: $droot variable not set in pbconf.php!';
+  $logmsg2 .= ' ERROR: $droot variable not set in pbconf.php!<br>';
+  $stoperror = true;
+}
+if (empty($sessions)) {
+  $logmsg .= ' ERROR: $sessions variable not set in pbconf.php!';
+  $logmsg2 .= ' ERROR: $sessions variable not set in pbconf.php!<br>';
+  $stoperror = true;
+}
+if (empty($logpath)) {
+  $logmsg2 .= ' ERROR: $logpath variable not set in pbconf.php!<br>';
+  syslog(LOG_ERR, 'PlopBox:' . $logmsg2);
+  exit($logmsg2);
+}
+if ($stoperror == true) {
+  @file_put_contents($logpath . "pblog.txt", $logmsg . PHP_EOL, FILE_APPEND) or logerror();
+  exit($logmsg2);
+}
 
 // Stop execution if specified directory is an excluded directory
 if (preg_match($folderexclude, $interlink) === 1) {
-  $logmsg .= 'DENIED' . PHP_EOL;
-  @fwrite($logfile, $logmsg);
-  @fclose($logfile);
-  exit('<h3>ACCESS DENIED</h3><br>You are not allowed to view ' . $interlink);
+  $logmsg .= ' ACCESS DENIED';
+  @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg3 . PHP_EOL, FILE_APPEND) or logerror();
+  header("HTTP/1.0 403 Forbidden");
+  exit;
 }
 
 // Parse ?sort URI argument
@@ -27,112 +84,83 @@ if (isset($_GET['sort'])) {
 }
 // Parse ?simplemode URI argument
 if (isset($_GET['simple'])) {
-  if ($_GET['simple'] === '1') {
+  if ($_GET['simple'] == 1) {
     $simplemode = 1;
-  } else if ($_GET['simple'] === '0') {
-    $simplemode = 0;
-  }
-}
-
-// Load stylesheet, header, and favicon
-echo '<link rel="shortcut icon" href="/plopbox/icons/favicon.gif" type="image/x-icon"/>';
-if ($simplemode === 1) {
-    echo 'Browsing: ' . $interlink;
-    echo '<br><a href="../?simple=1">Go Up a Directory</a>';
-    echo '<table><tr><td> </td><td><b>Name</b></td><td><b>Last Modified</b></td><td><b>Size</b></td></tr>';
-} else if ($simplemode === 0){
-  echo '<link rel="stylesheet" type="text/css" href=' . $host . '/plopbox/style.css />';
-  include '/plopbox/header.html';
-  echo '<div class="path">Browsing ' . $interlink . '</div>';
-  echo '<div class="columns"><div class="cname"><a href=' . $interlink . '?sort=' . ($sortval ^ 1) . '>Name</a></div><div class="ctime">Last Modified</div><div class="csize">Size</div></div><br>';
-  echo '<div class="wrapper">';
-}
-
-// Scan directory specified in the URI
-$directories = "";
-$files = "";
-$count = "0";
-$dcont = scandir(($droot . $interlink), $sort);
-if (isset($dcont['2']) === FALSE) {
-  echo '<div class="dirempty">Directory Empty</div>';
-  $logmsg .= 'OK EMPTY ' . PHP_EOL;
-} else {
-  foreach ($dcont as $file) {
-    // Skip excluded files, and count non-excluded files.
-    if (preg_match($fileexclude, $file) === 1) {
-      continue;
-    } else {
-      $count++;
-    }
-    // Define the target file
-	$ftarget = ($droot . '/' . $interlink . $file);
-// Inherit simplemode URI arguments for directory link
-$link = $file;
-if (is_dir($ftarget)) {
-  if (isset($_GET['simple'])) {
-    if ($simplemode === 1) {
-    $link = ($file . '/?simple=1');
-  } else if ($simplemode === 0) {
-    $link = ($file . '/?simple=0');
-  }
-}
-}
-  // Assign file icon
-	if (is_dir($ftarget)) {
-		$ficon = ($host . '/plopbox/icons/directory/folder.png');
-	} else {
-    $mime = strstr(finfo_file(finfo_open(FILEINFO_MIME), $ftarget ), ';', true);
-    $mime = str_replace('/', '-', $mime);
-    $mimed = "";
-    if ($mimedebug === 1) {$mimed = $mime;}
-		if (in_array($mime, $mimetypes)) {
-			$ficon =  ($host . '/plopbox/icons/mimetypes/' . $mime . '.png');
-		} else {
-			$ficon = ($host . '/plopbox/icons/mimetypes/application-x-zerosize.png');
-    }
-		}
-  // Calculate filesize
-  if (is_dir($ftarget)) {
-    $fsize = ' ';
   } else {
-    $fsize = filesize($ftarget);
-    $dec =  2;
-    $csize = 'BKMGTP';
-    $sizefactor = floor((strlen($fsize) - 1) / 3);
-    $fsize = sprintf("%.{$dec}f", $fsize / pow(1024, $sizefactor)) . ' <div class="sizefactor">' . @$csize[$sizefactor] . '</div>';
-  }
-	// Populate file index arrays
-  if ($simplemode === 1){
-    if (is_dir($ftarget)){
-      $directories .= '<tr><td><a href="' . htmlentities($link) . '"><img src="' . $ficon . '" /></a></td><td class="indexcolname"><a href="' . htmlentities($link) . '">' . htmlentities($file) . '</a></td><td class="indexcollastmod">' . date( "M j, Y - g:iA", filemtime($ftarget)) . '</td><td class="indexcolsize">' . $fsize . '</td></tr>';
-    } else {
-      $files .= '<tr><td><a href="' . htmlentities($link) . '"><img src="' . $ficon . '" /></a></td><td class="indexcolname"><a href="' . htmlentities($link) . '">' . htmlentities($file) . ' ' . $mimed . '</a></td><td class="indexcollastmod">' . date( "M j, Y - g:iA", filemtime($ftarget)) . '</td><td class="indexcolsize">' . $fsize . '</td></tr>';
-    }
-    } else if ($simplemode === 0){
-      if (is_dir($ftarget)) {
-        $directories .= '<div class="entry"><div class="selectors"><input id="' . $interlink . $file . '" type="checkbox" name="' . $file . '" value="' . $file . '"></div><div class="icon"><a href=' . rawurlencode($link) . '><img src="' . $ficon . '" /></a></div> <div class="name"><a href="' . htmlentities($link) . '">' . htmlentities($file) . '</a></div><div class="mtime">' . date( "M j, Y - g:iA", filemtime($ftarget)) . '</div><div class="size">' . $fsize . '</div></div>';
-      } else {
-        $files .= '<div class="entry"><div class="selectors"><input id="' . $interlink . $file . '" type="checkbox" name="' . $file . '" value="' . $file . '"></div><div class="icon"><a href=' . rawurlencode($link) . '><img src="' . $ficon . '" /></a></div> <div class="name"><a href="' . htmlentities($link) . '">' . htmlentities($file) . ' ' . $mimed . '</a></div><div class="mtime">' . date( "M j, Y - g:iA", filemtime($ftarget)) . '</div><div class="size">' . $fsize . '</div></div>';
-      }
+    $simplemode = 0;
+    $sslink = '&simple=0';
   }
 }
-// Output file index arrays
-echo $directories;
-echo $files;
-$logmsg .= 'OK ' . $count . ' ITEMS ' . PHP_EOL;
+
+// Session & Login Manager
+session_save_path($sessions);
+if (session_status() == PHP_SESSION_DISABLED) {
+  $logmsg1 .= " ERROR: PHP sessions are disabled. Enable PHP sessions to continue.";
+  $logmsg2 .= " ERROR: PHP sessions are disabled. Enable PHP sessions to continue.";
+  @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg3 . PHP_EOL, FILE_APPEND) or logerror();
+  exit($logmsg2);
+} else if (session_status() == PHP_SESSION_NONE) {
+  session_start();
+  $_SESSION['valid'] = false;
+  $_SESSION['timeout'] = $_SERVER['REQUEST_TIME'];
+}
+if (session_status() == PHP_SESSION_ACTIVE) {
+  // Check session timeout
+  if ($_SESSION['timeout'] - $_SERVER['REQUEST_TIME'] > 900) {
+    $_SESSION['valid'] = false;
+  }
+} if ($_SESSION['valid'] == false) {
+  $ctoken = newtoken($secret);
+  require "plopbox/login.php";
+}
+if ($_SESSION['valid'] == true) {
+  // Check and execute file operations
+  if (isset($_GET['fileop'])) {
+    if (!empty($_POST['ftoken'])) {
+      if (valtoken($_POST['ftoken'], 900) == true) {
+        $ctoken = newtoken($secret);
+        require "/plopbox/filemanager.php";
+        if ($_GET['fileop'] == 1) {
+          if (!empty($_FILES["filetoupload"]["name"])) {
+            $opresult = uploadfile($_FILES["fileToUpload"]["name"]);
+          }
+        } else if ($_GET['fileop'] == 2) {
+          if (!empty($_POST["foldername"])) {
+            $opresult = newfolder($_POST["foldername"]);
+          }
+        } else if ($_GET['fileop'] == 3) {
+          if (!empty($_POST["filestotrash"])) {
+            if (trashfile($_POST["filestotrash"]) == 0) {
+
+            }
+          }
+        }
+      } else {
+        $logmsg .= " INVALID/EXPIRED TOKEN";
+        $_SESSION['valid'] = false;
+        @file_put_contents($logpath . "pblog.txt", $logmsg . PHP_EOL, FILE_APPEND) or logerror();
+        die("ACCESS DENIED");
+      }
+    } else {
+      $logmsg .= " NO TOKEN (Suspicious!)";
+      $_SESSION['valid'] = false;
+      @file_put_contents($logpath . "pblog.txt", $logmsg . PHP_EOL, FILE_APPEND) or logerror();
+      die("ACCESS DENIED");
+    }
+  }
+  if ($_SESSION['valid'] == true) {
+    $ctoken = newtoken($secret);
+    require "/plopbox/core.php";
+  } else if ($_SESSION['valid'] == false) {
+    $ctoken = newtoken($secret);
+    require "/plopbox/login.php";
+  }
+  if ($_SESSION['valid'] == false) {
+    $ctoken = newtoken($secret);
+    require "/plopbox/login.php";
+  }
 }
 
 // Write to access log
-@fwrite($logfile, $logmsg);
-@fclose($logfile);
-
-// Begin footer
-if ($simplemode === 1){
-  echo '</table>';
-  echo ('<br></div><div class="footer">' . $count . ' Items in Directory<br><a href="' . $interlink .'?simple=0">Deactivate Simple Mode (Turn CSS & JS On)</a>');
-} else if ($simplemode === 0){
-  echo ('<br></div><div class="footer">' . $count . ' Items in Directory<br><a href="' . $interlink . '?simple=1">Activate Simple Mode (Turn CSS & JS Off)</a>');
-}
-include '/plopbox/footer.html';
-echo('<br>Index generated in ' . round((explode(' ', microtime())[0] + explode(' ', microtime())[1]) - $start, 4) . ' seconds.</div>');
+@file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg3 . PHP_EOL, FILE_APPEND) or logerror();
 ?>
