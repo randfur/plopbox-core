@@ -5,9 +5,12 @@ Plopbox-Core Installation Guide v1.1
 Pre-Requisites:
 ------------------------------------------
 PlopBox requires the following software to be installed & correctly configured:
-- SQLite 3
+- PHP 5.6+
+- "sqlite3" PHP Extension
+- "pdo_sqlite" PHP Extension
+- "fileinfo" PHP Extension
 - Apache HTTP Server, or compatible equivalent.
-- Apache's "mod_mime.so" module, or compatible equivalent.
+- Apache's "mod_mime" module, or compatible equivalent.
 
 -
 
@@ -17,8 +20,10 @@ Installation Instructions:
 (Or the highest level directory you would like PlopBox to be able to browse)
 (In Apache by default this is C:/Apache/htdocs)
 
- 2. Specify the absolute filesystem path of "index.php" as the Directory Index in your HTTP server.
+ 2. Verify the "php_pdo_sqlite", "php_sqlite3", and "php_filefinfo" extensions are loaded (uncommented) in your "php.ini" file.
+
+ 3. Specify the absolute filesystem path of "index.php" as the Directory Index in your HTTP server.
 (In Apache by default this is C:/Apache/htdocs/index.php)
 
- 3. Edit "/plopbox/pbconf.php" and configure the variables accordingly, following the instructions in the file.
+ 4. Edit "/plopbox/pbconf.php" and configure the variables accordingly, following the instructions in the file.
 (Configuration of this file is required. PlopBox will not function otherwise.)
