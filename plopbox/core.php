@@ -30,7 +30,7 @@ if (!function_exists('valtoken')) {
       include '/plopbox/header.html';
 
       // "Upload File" Dialog Box
-      $ftoken = newtoken();
+      $ftoken = newtoken($secret);
       echo '<div align="Center" id="uploadbox" style="visibility:hidden;" class="dialogbox">
       <div class="titlebar">Upload File<img class="fileclose" onclick="uploadclose()" src="/plopbox/images/controls/close.png"></div>
       <div class="boxwrapper">
@@ -44,7 +44,7 @@ if (!function_exists('valtoken')) {
       </div>';
 
       // "Make New Folder" Dialog Box
-      $ftoken = newtoken();
+      $ftoken = newtoken($secret);
       echo '<div align="Center" id="newfolderbox" style="visibility:hidden;" class="dialogbox">
       <div class="titlebar">New Folder<img class="fileclose" onclick="newfolderclose()" src="/plopbox/images/controls/close.png"></div>
       <div class="boxwrapper">
@@ -58,7 +58,7 @@ if (!function_exists('valtoken')) {
       </div>';
 
       // "Move to Trash" Dialog Box
-      $ftoken = newtoken();
+      $ftoken = newtoken($secret);
       echo '<div align="Center" id="trashbox" style="visibility:hidden;" class="dialogbox">
       <div class="titlebar">Move Files to Trash<img class="fileclose" onclick="trashboxclose()" src="/plopbox/images/controls/close.png"></div>
       <div class="boxwrapper">

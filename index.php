@@ -6,7 +6,7 @@ require "/plopbox/pbconf.php";
 require "/plopbox/pbfunc.php";
 $interlink = urldecode(strstr( $_SERVER['REQUEST_URI'], "?", true ) ?: $_SERVER['REQUEST_URI']);
 $host = ('http://' . $_SERVER['SERVER_NAME']);
-$logmsg2 = $logmsg3 = $directories = $files = $stoperror = "";
+$logmsg2 = $logmsg3 = $directories = $sslink = $files = $stoperror = "";
 
 // Setup timezone
 if (empty($timezone) == 0) {
@@ -17,7 +17,7 @@ if (empty($timezone) == 0) {
 }
 
 // Format log entry
-$logmsg = date("M d Y, G:i:s e", $_SERVER['REQUEST_TIME']) . ' - ' . $_SERVER['REMOTE_ADDR'] . ' - ' . $_SERVER['HTTP_USER_AGENT'] . ' > ' . $host . $interlink . ' | STATUS: ';
+$logmsg = date("M d Y, G:i:s e", $_SERVER['REQUEST_TIME']) . ' - ' . $_SERVER['REMOTE_ADDR'] . ' - ' . $_SERVER['HTTP_USER_AGENT'] . ' --> ' . $host . $interlink . ' | STATUS: ';
 
 // Log write error
 function logerror() {
@@ -92,7 +92,7 @@ if (isset($_GET['simple'])) {
   }
 }
 
-// Session & Login Manager
+// Session & Login Manager (this thing is ugly)
 session_save_path($sessions);
 if (session_status() == PHP_SESSION_DISABLED) {
   $logmsg1 .= " ERROR: PHP sessions are disabled. Enable PHP sessions to continue.";
@@ -101,63 +101,73 @@ if (session_status() == PHP_SESSION_DISABLED) {
   exit($logmsg2);
 } else if (session_status() == PHP_SESSION_NONE) {
   session_start();
-  $_SESSION['valid'] = false;
-  $_SESSION['timeout'] = $_SERVER['REQUEST_TIME'];
+  if (!isset($_SESSION['valid'])) {
+    $_SESSION['valid'] = false;
+  }
 }
 if (session_status() == PHP_SESSION_ACTIVE) {
   // Check session timeout
-  if ($_SESSION['timeout'] - $_SERVER['REQUEST_TIME'] > 900) {
+  if (!empty($_SESSION['timeout'])) {
+    if ($_SESSION['timeout'] - $_SERVER['REQUEST_TIME'] > 1800) {
+      $_SESSION['valid'] = false;
+    }
+  } else {
     $_SESSION['valid'] = false;
   }
-} if ($_SESSION['valid'] == false) {
-  $ctoken = newtoken($secret);
-  require "plopbox/login.php";
-}
-if ($_SESSION['valid'] == true) {
-  // Check and execute file operations
-  if (isset($_GET['fileop'])) {
-    if (!empty($_POST['ftoken'])) {
-      if (valtoken($_POST['ftoken'], 900) == true) {
-        $ctoken = newtoken($secret);
-        require "/plopbox/filemanager.php";
-        if ($_GET['fileop'] == 1) {
-          if (!empty($_FILES["filetoupload"]["name"])) {
-            $opresult = uploadfile($_FILES["fileToUpload"]["name"]);
-          }
-        } else if ($_GET['fileop'] == 2) {
-          if (!empty($_POST["foldername"])) {
-            $opresult = newfolder($_POST["foldername"]);
-          }
-        } else if ($_GET['fileop'] == 3) {
-          if (!empty($_POST["filestotrash"])) {
-            if (trashfile($_POST["filestotrash"]) == 0) {
+  if ($_SESSION['valid'] == false) {
+    $ctoken = newtoken($secret);
+    require "plopbox/login.php";
+  }
+  // Check session timeout again
+  if (!empty($_SESSION['timeout'])) {
+    if ($_SESSION['timeout'] - $_SERVER['REQUEST_TIME'] > 1800) {
+      $_SESSION['valid'] = false;
+    }
+  } else {
+    $_SESSION['valid'] = false;
+  }
+  if ($_SESSION['valid'] == true) {
+    // Check and execute file operations
+    if (isset($_GET['fileop'])) {
+      if (!empty($_POST['ftoken'])) {
+        if (valtoken($_POST['ftoken'], 900) == true) {
+          $ctoken = newtoken($secret);
+          require "/plopbox/filemanager.php";
+          if ($_GET['fileop'] == 1) {
+            if (!empty($_FILES["filetoupload"]["name"])) {
+              $opresult = uploadfile($_FILES["fileToUpload"]["name"]);
+            }
+          } else if ($_GET['fileop'] == 2) {
+            if (!empty($_POST["foldername"])) {
+              $opresult = newfolder($_POST["foldername"]);
+            }
+          } else if ($_GET['fileop'] == 3) {
+            if (!empty($_POST["filestotrash"])) {
+              if (trashfile($_POST["filestotrash"]) == 0) {
 
+              }
             }
           }
+        } else {
+          $logmsg .= " INVALID/EXPIRED FILE OPERATION TOKEN";
+          $_SESSION['valid'] = false;
+          @file_put_contents($logpath . "pblog.txt", $logmsg . PHP_EOL, FILE_APPEND) or logerror();
+          die("ACCESS DENIED");
         }
       } else {
-        $logmsg .= " INVALID/EXPIRED TOKEN";
+        $logmsg .= " NO FILE OPERATION TOKEN (Suspicious!)";
         $_SESSION['valid'] = false;
         @file_put_contents($logpath . "pblog.txt", $logmsg . PHP_EOL, FILE_APPEND) or logerror();
         die("ACCESS DENIED");
       }
-    } else {
-      $logmsg .= " NO TOKEN (Suspicious!)";
-      $_SESSION['valid'] = false;
-      @file_put_contents($logpath . "pblog.txt", $logmsg . PHP_EOL, FILE_APPEND) or logerror();
-      die("ACCESS DENIED");
     }
-  }
-  if ($_SESSION['valid'] == true) {
-    $ctoken = newtoken($secret);
-    require "/plopbox/core.php";
-  } else if ($_SESSION['valid'] == false) {
-    $ctoken = newtoken($secret);
-    require "/plopbox/login.php";
-  }
-  if ($_SESSION['valid'] == false) {
-    $ctoken = newtoken($secret);
-    require "/plopbox/login.php";
+    if ($_SESSION['valid'] == true) {
+      $ctoken = newtoken($secret);
+      require "/plopbox/core.php";
+    } else if ($_SESSION['valid'] == false) {
+      $ctoken = newtoken($secret);
+      require "/plopbox/login.php";
+    }
   }
 }
 

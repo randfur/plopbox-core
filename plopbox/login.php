@@ -40,8 +40,7 @@ try {
   $db = new PDO("sqlite:" . $droot . "/plopbox/db/users.db") or die("Database Error!");
   $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
   $sth = $db->query('SELECT prim FROM users WHERE prim = 1');
-  $sth->setFetchMode(PDO::FETCH_ASSOC);
-  while ($row = $sth->fetch()) {
+  while ($row = $sth->fetch(PDO::FETCH_ASSOC)) {
     if (isset($row['prim'])) {
       if ($row['prim'] == 1) {
         $pu = 1;
@@ -90,32 +89,35 @@ function createpupage($host, $secret) {
 // Verify Username Exists
 function finduname($u, $droot, $logpath) {
   try {
-    $db = new PDO("sqlite:" . $droot . "/plopbox/db/users.db");
+    $result = false;
+    $db = new PDO("sqlite:" . $droot . "/plopbox/db/users.db") or die("Database Error!");
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $sth = $db->prepare('SELECT uname FROM users WHERE uname = :u');
-    $sth->bindParam(':u', $u);
-    $sth->setFetchMode(PDO::FETCH_ASSOC);
-    while ($row = $sth->fetch()) {
-      echo 'TEST ' . $row['uname'];
-      if ($row['uname'] == $u) {
-        $db = null;
-        $sth = null;
-        return true;
-        break;
+    $sth = $db->prepare('SELECT uname FROM users WHERE uname=:u');
+    $sth->bindValue(':u', $u, PDO::PARAM_STR);
+    $sth->execute();
+    while ($row = $sth->fetch(PDO::FETCH_ASSOC)) {
+      if (isset($row['uname'])) {
+        if ($row['uname'] == $u) {
+          $db = null;
+          $sth = null;
+          $result = true;
+          break;
+        } else {
+          continue;
+        }
       } else {
         continue;
       }
     }
+    return $result;
     $db = null;
     $sth = null;
-    return false;
   }
   catch(PDOException $e) {
     $logmsg = ' ' . $e;
-    @file_put_contents($logpath . "pblog.txt", $logmsg . PHP_EOL, FILE_APPEND) or logerror();
+    @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg3 . PHP_EOL, FILE_APPEND) or logerror();
     $db = null;
     $sth = null;
-    return false;
     exit($e);
   }
 }
@@ -123,32 +125,35 @@ function finduname($u, $droot, $logpath) {
 // Find Password Hash for given Username
 function findphash($u, $droot, $logpath) {
   try {
-    $db = new PDO("sqlite:" . $droot . "/plopbox/db/users.db");
+    $result = false;
+    $db = new PDO("sqlite:" . $droot . "/plopbox/db/users.db") or die("Database Error!");
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $sth = $db->prepare('SELECT uname, phash FROM users WHERE uname = :u');
-    $sth->bindParam(':u', $u);
-    $sth->setFetchMode(PDO::FETCH_ASSOC);
-    while ($row = $sth->fetch()) {
-      if ($row['uname'] == $u) {
-        $phash = $row['phash'];
-        $db = null;
-        $sth = null;
-        return $phash;
-        break;
+    $sth = $db->prepare('SELECT uname, phash FROM users WHERE uname=:u');
+    $sth->bindValue(':u', $u, PDO::PARAM_STR);
+    $sth->execute();
+    while ($row = $sth->fetch(PDO::FETCH_ASSOC)) {
+      if (isset($row['uname']) && isset($row['phash'])) {
+        if ($row['uname'] == $u) {
+          $db = null;
+          $sth = null;
+          $result = $row['phash'];
+          break;
+        } else {
+          continue;
+        }
       } else {
         continue;
       }
     }
+    return $result;
     $db = null;
     $sth = null;
-    return false;
   }
   catch(PDOException $e) {
     $logmsg = ' ' . $e;
-    @file_put_contents($logpath . "pblog.txt", $logmsg . PHP_EOL, FILE_APPEND) or logerror();
+    @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg3 . PHP_EOL, FILE_APPEND) or logerror();
     $db = null;
     $sth = null;
-    return false;
     exit($e);
   }
 }
@@ -156,12 +161,12 @@ function findphash($u, $droot, $logpath) {
 // Create Primary User
 function createpu($u, $p, $droot, $logpath) {
   try {
-    $phash = password_hash(dechex(time()) . $p, PASSWORD_BCRYPT);
+    $phash = password_hash($p, PASSWORD_BCRYPT);
     $db = new PDO("sqlite:" . $droot . "/plopbox/db/users.db");
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $sth = $db->prepare('INSERT INTO users (uname, prim, phash) VALUES (:uname, 1, :phash)');
     $sth->bindParam(':uname', $u);
-    $sth->bindParam(':phash', $p);
+    $sth->bindParam(':phash', $phash);
     $sth->execute();
     $db = null;
     $sth = null;
@@ -181,11 +186,13 @@ if ($pu == true) {
     if (!empty($_POST['token'])) {
       if (valtoken($_POST['token'], $secret, 300) == true) {
         if (finduname($_POST['username'], $droot, $logpath) == true) {
-          if (findphash($_POST['username'], $droot, $logpath) !== false ) {
-            if (password_verify($_POST['password'], findphash($_POST['username']))) {
+          if (findphash($_POST['username'], $droot, $logpath) !== false) {
+            if (password_verify($_POST['password'], findphash($_POST['username'], $droot, $logpath))) {
               $_SESSION['user'] = $_POST['username'];
               $_SESSION['timeout'] = time();
               $_SESSION['valid'] = true;
+              $logmsg .= ' LOGIN PAGE, AUTH OK: User "' . $_SESSION['user'] . '" logged in successfully.';
+              @file_put_contents($logpath . "pblog.txt", $logmsg . PHP_EOL, FILE_APPEND) or logerror();
             } else {
               $_SESSION['valid'] = false;
               echo '<div class="loginfailure">You have entered an incorrect username or password.</div>';
