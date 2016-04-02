@@ -1,6 +1,12 @@
 <?php
 // PlopBox FileBrowser Functions
 
+// Log write error
+function logerror() {
+  echo 'ERROR writing PlopBox log! Check $logpath in pbconf.php';
+  syslog(LOG_ERR, 'PlopBox: ERROR writing PlopBox log! Check $logpath in pbconf.php');
+}
+
 // Generate Token
 function newtoken($s) {
   $tkn = dechex(mt_rand());

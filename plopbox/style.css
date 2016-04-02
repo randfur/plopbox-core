@@ -10,21 +10,20 @@
   position:fixed;
   z-index:3;
   background-image:url("/plopbox/images/controls/headerbg.png");
-  padding-bottom:8px;
-  padding-top:20px;
   min-width:630px;
   width:100%;
-  height:80px;
+  height:50px;
   border-bottom:2px solid #bfbfbf;
   box-shadow:0px 3px 5px grey;
 }
 
 .logo {
-  position:absolute;
-  margin:5px;
+  position:fixed;
+  display:inline;
+  top:10px;
   margin-left:10px;
   font-family:'Poiret One';
-  font-size:58px;
+  font-size:45px;
   text-shadow: 1px 2px 3px grey;
 }
 
@@ -38,12 +37,13 @@ width:auto;
 .path {
   position:fixed;
   z-index:2;
+  min-width:630px;
   font-family:"Ubuntu Mono";
   height:23px;
   width:100%;
   background-color:#edf1f5;
   border-bottom:1px solid lightgrey;
-  margin-top:80px;
+  margin-top:50px;
   padding-left:10px;
   padding-top:3px;
 }
@@ -53,7 +53,7 @@ width:auto;
   display:block;
   z-index:1;
   font-family:"Ubuntu Mono";
-  margin-top:99px;
+  margin-top:73px;
   min-width:630px;
   border-bottom:2px solid #edf1f5;
   width:100%;
@@ -161,11 +161,13 @@ background-color:black;
 /* File Index Elements */
 
 .wrapper {
-	padding-top:110px;
-	width:100%;
+	padding-top:83px;
+	width:99%;
   height:auto;
   min-height:90%;
   min-width:630px;
+  margin-left:1%;
+  margin-right:1%;
   overflow:visible;
 }
 
@@ -255,6 +257,47 @@ background-color:black;
 
 /* Misc */
 
+.loginlogo {
+  position:relative;
+  display:inline-block;
+  margin:auto;
+  color:#4d4d4d;
+  font-weight:bolder;
+  font-family:'Poiret One';
+  font-size:80px;
+  text-shadow: 1px 2px 3px black;
+  top: -70px; left: 0; bottom: 0; right: 0;
+}
+
+.loginpage {
+  background: linear-gradient(0deg, #d5c9b3, #5783a7);
+background-size: 400% 400%;
+-webkit-animation: loginpage 30s ease infinite;
+-moz-animation: loginpage 30s ease infinite;
+animation: loginpage 30s ease infinite;
+	width:100%;
+  height:100%;
+  min-height:630px;
+  min-width:630px;
+  overflow:visible;
+}
+
+@-webkit-keyframes loginpage {
+    0%{background-position:88% 0%}
+    50%{background-position:13% 100%}
+    100%{background-position:88% 0%}
+}
+@-moz-keyframes loginpage {
+    0%{background-position:88% 0%}
+    50%{background-position:13% 100%}
+    100%{background-position:88% 0%}
+}
+@keyframes loginpage {
+    0%{background-position:88% 0%}
+    50%{background-position:13% 100%}
+    100%{background-position:88% 0%}
+}
+
 * {
 	margin:0;
 	padding:0;
@@ -273,7 +316,6 @@ html {
 	line-height:1em;
 }
 body {
-  padding-bottom:20px;
   min-width:630px;
 	-webkit-backface-visibility:hidden;
 }
