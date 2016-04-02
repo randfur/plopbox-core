@@ -15,12 +15,9 @@ $droot="C:/Apache/htdocs";
 //Example path: "C:/Apache/htdocs/plopbox/logs/";
 $logpath="C:/Apache/htdocs/plopbox/logs/";
 
-// REQUIRED: $secret: Random alpha-numeric characters (a-z, A-Z, 0-9), used for token validation & generation.
+// REQUIRED: $secret: Random alpha-numeric characters (a-z, A-Z, 0-9) used for token validation & generation.
 //The value should be something completely random and un-guessable. Use https://www.grc.com/passwords.htm
 $secret="";
-
-// REQUIRED: $sessions: Full filesystem path to the PlopBox sessions folder, with trailing slash.
-$sessions="C:/Apache/htdocs/plopbox/sessions/";
 
 
 //------------------------------------------------------------------------------
@@ -59,13 +56,13 @@ $folderexclude="/^(.plopbox.*)$/";
 $simplemode=0;
 
 // $mimetypes: Cross-checks file MIME types with known existing MIME type icons.
-//If you are adding new icons, you must add the matching filename to this list.
+//If you are adding new icons, you must add the matching filename to this list, without filename extension suffix.
 //If a detected MIME type is not found in this list, a default icon is used.
 $mimetypes=array("application-epub+zip","application-illustrator","application-javascript","application-mac-binhex40","application-msword-template","application-msword","application-octet-stream","application-pdf","application-pgp-encrypted","application-pgp-keys","application-pgp-signature","application-pkcs7-mime","application-pkcs7-signature","application-postscript","application-relaxng","application-rss+xml","application-rtf","application-sxw","application-vnd-google-earth-kml","application-vnd.iccprofile","application-vnd.ms-access","application-vnd.ms-excel","application-vnd.ms-powerpoint","application-vnd.oasis.opendocument.chart","application-vnd.oasis.opendocument.database","application-vnd.oasis.opendocument.formula-template","application-vnd.oasis.opendocument.formula","application-vnd.oasis.opendocument.graphics","application-vnd.oasis.opendocument.image","application-vnd.oasis.opendocument.presentation-template","application-vnd.oasis.opendocument.presentation","application-vnd.oasis.opendocument.spreadsheet-template","application-vnd.oasis.opendocument.spreadsheet","application-vnd.oasis.opendocument.text-master","application-vnd.oasis.opendocument.text-template","application-vnd.oasis.opendocument.text","application-vnd.openxmlformats-officedocument.wordprocessingml.document","application-vnd.rn-realmedia","application-vnd.scribus","application-vnd.stardivision.calc","application-vnd.stardivision.draw","application-vnd.stardivision.mail","application-vnd.stardivision.math","application-vnd.sun.xml.calc","application-vnd.sun.xml.calc.template","application-vnd.sun.xml.draw","application-vnd.sun.xml.draw.template","application-vnd.sun.xml.impress","application-vnd.sun.xml.impress.template","application-vnd.sun.xml.math","application-vnd.sun.xml.writer.global","application-vnd.sun.xml.writer","application-vnd.sun.xml.writer.template","application-vnd.wordperfect","application-x-7z-compressed","application-x-abiword","application-x-ace","application-x-applix-spreadsheet","application-x-applix-word","application-x-ar","application-x-arc","application-x-archive","application-x-arj","application-x-awk","application-x-bittorrent","application-x-blender","application-x-bzdvi","application-x-bzip-compressed-tar","application-x-bzip","application-x-cd-image","application-x-cda","application-x-chm","application-x-compress","application-x-compressed-tar","application-x-cpio","application-x-cue","application-x-deb","application-x-designer","application-x-desktop","application-x-egon","application-x-executable-script","application-x-executable","application-x-font-afm","application-x-font-bdf","application-x-font-otf","application-x-font-pcf","application-x-font-snf","application-x-font-ttf","application-x-font-type1","application-x-gnumeric","application-x-gzdvi","application-x-gzip","application-x-gzpostscript","application-x-it87","application-x-java-applet","application-x-java-archive","application-x-java","application-x-javascript","application-x-k3b","application-x-kcsrc","application-x-kexi-connectiondata","application-x-kexiproject-shortcut","application-x-kexiproject-sqlite","application-x-kexiproject-sqlite2","application-x-kexiproject-sqlite3","application-x-kformula","application-x-kgetlist","application-x-kontour","application-x-kplato","application-x-krita","application-x-kvtml","application-x-kword","application-x-lha","application-x-lyx","application-x-lzma-compressed-tar","application-x-lzop","application-x-m4","application-x-marble","application-x-mimearchive","application-x-mplayer2","application-x-ms-dos-executable","application-x-mswinurl","application-x-mswrite","application-x-nzb","application-x-object","application-x-pak","application-x-pem-key","application-x-perl","application-x-php","application-x-plasma","application-x-python-bytecode","application-x-qet-element","application-x-qet-project","application-x-quattropro","application-x-rar","application-x-rpm","application-x-ruby","application-x-sharedlib","application-x-shellscript","application-x-shockwave-flash","application-x-siag","application-x-smb-server","application-x-smb-workgroup","application-x-sqlite2","application-x-sqlite3","application-x-srt","application-x-srtrip","application-x-stuffit","application-x-subrip","application-x-tar","application-x-tarz","application-x-tgif","application-x-trash","application-x-troff-man","application-x-tzo","application-x-wmf","application-x-zerosize","application-x-zoo","application-xhtml+xml","application-xml","application-xsd","application-xslt+xml","application-zip","audio-ac3","audio-midi","audio-prs.sid","audio-vn.rn-realmedia","audio-vnd.rn-realvideo","audio-x-adpcm","audio-x-aiff","audio-x-flac+ogg","audio-x-flac","audio-x-generic","audio-x-monkey","audio-x-speex+ogg","audio-x-wav","encrypted","image-svg+xml-compressed","image-svg+xml","image-tiff","image-vnd.dgn","image-vnd.dwg","image-x-adobe-dng","image-x-eps","image-x-generic","image-x-vnd.trolltech.qpicture","image-x-xfig","message-news","message-partial","message-rfc822","message-x-gnu-rmail","message","odf","package-x-generic","text-calendar","text-css","text-csv","text-directory","text-enriched","text-html","text-mathml","text-plain","text-rdf+xml","text-rdf","text-rtf","text-sgml","text-troff","text-vcalendar","text-vnd.abc","text-vnd.wap.wml","text-x-adasrc","text-x-authors","text-x-bibtex","text-x-c++hdr","text-x-c++src","text-x-changelog","text-x-chdr","text-x-cmake","text-x-copying","text-x-csharp","text-x-csrc","text-x-dtd","text-x-generic","text-x-haskell","text-x-hex","text-x-install","text-x-java","text-x-katefilelist","text-x-ldif","text-x-lilypond","text-x-log","text-x-makefile","text-x-nfo","text-x-objchdr","text-x-objcsrc","text-x-pascal","text-x-patch","text-x-po","text-x-python","text-x-qml","text-x-readme","text-x-rpm-spec","text-x-script","text-x-sql","text-x-tcl","text-x-tex","text-x-texinfo","text-x-vcard","text-x-xslfo","text-xmcd","text-xml","unknown","uri-mms","uri-mmst","uri-mmsu","uri-pnm","uri-rtspt","uri-rtspu","video-x-generic","video-x-mng","x-kde-nsplugin-generated","x-media-podcast","x-office-address-book","x-office-calendar","x-office-contact","x-office-document","x-office-presentation","x-office-spreadsheet");
 
 // $mimedebug: Echoes the detected MIME type after each file when set to 1.
 //Default value is: 0;
-$mimedebug=1;
+$mimedebug=0;
 
 //---------------------------------------------------------------------------
 //////////////////////////////////////////////
@@ -86,13 +83,12 @@ $mimedebug=1;
 // You are fully responsible for your own system's security, with filesystem permissions etc.
 // The values must be Perl Compatible Regular Expressions with delimiters.
 
-//  $timezone is a variable for date_default_timezone_set, and must contain a
-// timezone identifier that is valid for that function.
-// A complete list of supported identifiers is here: http://php.net/manual/en/timezones.php
+//  $timezone is a variable for the date_default_timezone_set function, and must
+// contain a timezone identifier that is valid for that function.
 
-//  $mimetypes is a dual-purpose array. Values must be valid MIME types.
+//  $mimetypes is a dual-purpose array. All values must be valid MIME types.
 // The array is an index of the icons inside the /plopbox/icons/mimetypes folder,
 // as well as an index of MIME types known to PlopBox. MIME types and their matching icons
-// are cross-checked to the list on a 1:1 ratio, the only differences being slash conversion.
+// are cross-checked to the list on a 1:1 ratio, the only differences being slash->hyphen conversion.
 // (IE: "text/plain" becomes "text-plain", as slashes cannot be included in the icon filenames).
 ?>
