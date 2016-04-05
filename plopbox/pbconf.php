@@ -7,13 +7,12 @@
 
 // REQUIRED: $droot: Absolute filesystem path of your HTTP document-root, without trailing slash.
 // This folder should contain "index.php" and the "plopbox" folder.
-//Example Path: "C:/Apache/htdocs";
-$droot="C:/Apache/htdocs";
+$droot="";
 
 // REQUIRED: $logpath: Absolute filesystem path to the PlopBox log folder, with trailing slash.
-//PlopBox will output a logfile named "pblog.txt".
-//Example path: "C:/Apache/htdocs/plopbox/logs/";
-$logpath="C:/Apache/htdocs/plopbox/logs/";
+//PlopBox will output a logfile named "pblog.txt" inside the specified folder.
+// You can use the folder located in "/plopbox/logs/".
+$logpath="";
 
 // REQUIRED: $secret: Random alpha-numeric characters (a-z, A-Z, 0-9) used for token validation & generation.
 //The value should be something completely random and un-guessable. Use https://www.grc.com/passwords.htm
@@ -74,8 +73,8 @@ $mimedebug=0;
 // An ampersand indicates multiple different examples.
 
 //  When setting $droot, the value can be anything you like, as long as it is the
-// uppermost directory you would like to browse, contains both the PlopBox
-// index.php and core PlopBox directory. $droot does not neccesarily need to be
+// uppermost directory you would like to browse, and contains both the PlopBox
+// index.php and core PlopBox directory. $droot does not necessarily need to be
 // your HTTP document-root.
 
 //  The $fileexclude and $folderexclude variables DO NOT actually deny access to
