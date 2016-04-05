@@ -33,7 +33,7 @@ if (!function_exists('valtoken')) {
 
       // Construct initial user table
       try {
-        $db->exec('CREATE TABLE IF NOT EXISTS users (uname TEXT PRIMARY KEY, prim INT, phash TEXT, flimit INTEGER)');
+        $db->exec('CREATE TABLE IF NOT EXISTS users (uname TEXT PRIMARY KEY, role INTEGER, phash TEXT, flimit INTEGER)');
       }
       catch(PDOException $e) {
         $logmsg = ' ' . $e;
@@ -46,10 +46,10 @@ if (!function_exists('valtoken')) {
       // Verify Primary User exists
       $pu = 0;
       try {
-        $sth = $db->query('SELECT prim FROM users WHERE prim = 1');
+        $sth = $db->query('SELECT role FROM users WHERE role = 1');
         while ($row = $sth->fetch(PDO::FETCH_ASSOC)) {
-          if (isset($row['prim'])) {
-            if ($row['prim'] == 1) {
+          if (isset($row['role'])) {
+            if ($row['role'] == 1) {
               $pu = 1;
               break;
             } else {
@@ -108,15 +108,15 @@ if (!function_exists('valtoken')) {
         try {
           $result = false;
           $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-          $sth = $db->prepare('SELECT uname, phash, prim, flimit FROM users WHERE uname=:u');
+          $sth = $db->prepare('SELECT uname, role, phash, flimit FROM users WHERE uname=:u');
           $sth->bindValue(':u', $u, PDO::PARAM_STR);
           $sth->execute();
           while ($row = $sth->fetch(PDO::FETCH_ASSOC)) {
             if (isset($row['uname'])) {
-              if (isset($row['phash']) && isset($row['prim']) && isset($row['flimit'])) {
+              if (isset($row['phash']) && isset($row['role']) && isset($row['flimit'])) {
                 if ($row['uname'] == $u) {
                   $sth = null;
-                  $result = array('uname' => $row['uname'], 'phash' => $row['phash'], 'prim' => $row['prim'], 'flimit' => $row['flimit']);
+                  $result = array('uname' => $row['uname'], 'role' => $row['role'], 'phash' => $row['phash'], 'flimit' => $row['flimit']);
                   break;
                 } else {
                   continue;
@@ -145,9 +145,9 @@ if (!function_exists('valtoken')) {
         try {
           $phash = password_hash($p, PASSWORD_BCRYPT);
           $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-          $sth = $db->prepare('INSERT INTO users (uname, prim, phash, flimit) VALUES (:uname, 1, :phash, 50)');
-          $sth->bindParam(':uname', $u);
-          $sth->bindParam(':phash', $phash);
+          $sth = $db->prepare('INSERT INTO users (uname, role, phash, flimit) VALUES (:uname, 1, :phash, 50)');
+          $sth->bindValue(':uname', $u);
+          $sth->bindValue(':phash', $phash);
           $sth->execute();
           $sth = null;
         }
@@ -163,23 +163,26 @@ if (!function_exists('valtoken')) {
       // Login Page
       function loginpage($host, $secret) {
         $token = newtoken($secret);
-        echo '<link rel="shortcut icon" href="/plopbox/icons/favicon.gif" type="image/x-icon"/>';
+        echo '<link rel="shortcut icon" href="/plopbox/images/controls/favicon.gif" type="image/x-icon"/>';
         echo '<link rel="stylesheet" type="text/css" href=' . $host . '/plopbox/style.css />';
-        echo '<div class="loginpage"><div align="Center" id="loginbox" class="dialogbox"><div class="loginlogo">plopbox</div>';
-        echo '<div class="titlebar">Log In</div>';
-        echo '<div class="boxwrapper">';
-        echo '<form action="' . $host . '" method="post" enctype="multipart/form-data"><input type="hidden" name="token" value="' . $token . '">Username:<input type="text" name="username" id="username"><br>Password:<input type="text" name="password" id="password"><br><input type="submit" value="Log In" name="login"></form></div></div></div>';
+        echo '<div class="spotlight"></div>';
+        echo '<div class="loginpage"><div align="Center" id="loginbox" class="loginbox"><div class="loginlogo">plopbox</div>';
+        echo '<div class="loginboxwrapper">';
+        echo '<form class="loginform" action="' . $host . '" method="post" enctype="multipart/form-data"><input type="hidden" name="token" value="' . $token . '"><ul><li><label for="username">Username</label><input type="text" name="username" id="username"><span>Forgot your Username?</span></li><li><label for="password">Password</label><input type="password" name="password" id="password"><span>Forgot your Password?</span></li><li><input type="submit" value="Log In"></li></ul></form></div></div></div>';
+        echo '<div class="loginpagebackground"></div>';
+        echo '<div class="clouds"></div>';
         $token = null;
       }
       // Primary User Creation Page
       function createpupage($host, $secret) {
         $putoken = newtoken($secret);
-        echo '<link rel="shortcut icon" href="/plopbox/icons/favicon.gif" type="image/x-icon"/>';
+        echo '<link rel="shortcut icon" href="/plopbox/images/controls/favicon.gif" type="image/x-icon"/>';
         echo '<link rel="stylesheet" type="text/css" href=' . $host . '/plopbox/style.css />';
-        echo '<div style="background-image:url("/plopbox/images/controls/login.jpg")" class="wrapper"><div align="Center" id="createpubox" class="dialogbox">';
-        echo '<div class="titlebar">Create Primary Account</div>';
-        echo '<div class="boxwrapper">';
-        echo '<form action="' . $host . '" method="post" enctype="multipart/form-data"><input type="hidden" name="putoken" value="' . $putoken . '">Username:<input type="text" name="puusername" id="puusername"><br>Password:<input type="text" name="pupassword" id="pupassword"><br><input type="submit" value="Create User" name="createpu"></form></div></div></div>';
+        echo '<div class="loginpage"><div align="Center" id="createpubox" class="loginbox"><div class="loginlogo">plopbox</div>';
+        echo '<div class="loginboxwrapper">';
+        echo 'Create Primary User Account<form class="loginform" action="' . $host . '" method="post" enctype="multipart/form-data"><input type="hidden" name="putoken" value="' . $putoken . '"><ul><li><label for="username">Username</label><input type="text" name="puusername" id="puusername"></li><li><label for="password">Password</label><input type="password" name="pupassword" id="pupassword"></li><li><input type="submit" value="Create User"></li></ul></form></div></div></div>';
+        echo '<div class="loginpagebackground"></div>';
+        echo '<div class="clouds"></div>';
         $putoken = null;
       }
 
