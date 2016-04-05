@@ -112,7 +112,7 @@ if (session_status() == PHP_SESSION_NONE) {
 // Check if logging out
 if ($logout == true) {
   $_SESSION['stoken'] = false;
-  $logmsg .= ' User "' . $_SESSION['user'] . '" logged out.';
+  $logmsg3 .= ': User "' . $_SESSION['user'] . '" logged out.';
 }
 
 if (session_status() == PHP_SESSION_ACTIVE) {
