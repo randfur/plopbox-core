@@ -24,32 +24,34 @@ if (!function_exists('valtoken')) {
         header("HTTP/1.0 403 Forbidden");
       } else {
 
-        function uploadfile($f, $droot, $interlink) {
+        // Upload a File
+        function uploadfile($f, $droot, $interlink, $folderexclude) {
           $statcode = 1;
           $status = "";
-          if (basename($f) ==! null) {
+          if (!empty($f)) {
             if (preg_match($folderexclude, $interlink) === 1) {
               return false;
-            }
-            $target_file = $droot . '/' . $interlink . basename($f);
-            if (file_exists($target_file)) {
-              $status .= " The file already exists.";
-              $statcode = 0;
-            }
-            // Check file size
-            if ($_FILES["fileToUpload"]["size"] > 5368709120) {
-              $status .= " Your file is too large.";
-              $statcode = 0;
-            }
-            // Check if $statcode is set to 0 by an error
-            if ($statcode == 0) {
-              $status .= " Your file was not uploaded.";
-              // if everything is ok, try to upload file
             } else {
-              if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)) {
-                $status .= " The file ". basename($f). " has been uploaded.";
+              $target_file = $droot . '/' . $interlink . basename($f);
+              if (file_exists($target_file)) {
+                $status .= " The file already exists.";
+                $statcode = 0;
+              }
+              // Check file size
+              if ($_FILES["fileToUpload"]["size"] > 5368709120) {
+                $status .= " Your file is too large.";
+                $statcode = 0;
+              }
+              // Check if $statcode is set to 0 by an error
+              if ($statcode == 0) {
+                $status .= " Your file was not uploaded.";
+                // if everything is ok, try to upload file
               } else {
-                $status .= " There was an error uploading your file.";
+                if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)) {
+                  $status .= " The file ". basename($f). " has been uploaded.";
+                } else {
+                  $status .= " There was an error uploading your file.";
+                }
               }
             }
           } else {
@@ -58,7 +60,8 @@ if (!function_exists('valtoken')) {
           return $status;
         }
 
-        function trashfile($f, $droot, $interlink) {
+        // Move a file or folder to the trash
+        function trashfile($f, $droot, $interlink, $folderexclude) {
           if (preg_match($folderexclude, $interlink) === 1) {
             return false;
           }
@@ -70,8 +73,9 @@ if (!function_exists('valtoken')) {
             echo ($file . '<br>');
           }
         }
-
-        function newfolder($f, $droot, $interlink) {
+        
+        // Create a new folder
+        function newfolder($f, $droot, $interlink, $folderexclude) {
           $status = "";
           if (preg_match($folderexclude, $interlink) === 1) {
             return false;
@@ -99,6 +103,7 @@ if (!function_exists('valtoken')) {
           }
           return $status;
         }
+
       }
     } else {
       $logmsg .= " FILE MANAGER, ACCESS DENIED: MISSING CORE TOKEN (Suspicious!)";
