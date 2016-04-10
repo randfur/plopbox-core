@@ -23,14 +23,14 @@ function valtoken($t, $s, $to) {
   $tin = explode('-', $t);
   if (hash_hmac('sha1', $tin[0] . $tin[1] . $tin[2], $s) == $tin[3]) {
     if (hexdec($tin[1]) == session_id()) {
-    if ($_SERVER['REQUEST_TIME'] - hexdec($tin[2]) > $to) {
+      if ($_SERVER['REQUEST_TIME'] - hexdec($tin[2]) > $to) {
+        return false;
+      } else if ($_SERVER['REQUEST_TIME'] - hexdec($tin[2]) < $to) {
+        return true;
+      }
+    } else {
       return false;
-    } else if ($_SERVER['REQUEST_TIME'] - hexdec($tin[2]) < $to) {
-      return true;
     }
-  } else {
-    return false;
-  }
   } else {
     return false;
   }
