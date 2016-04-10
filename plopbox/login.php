@@ -161,28 +161,45 @@ if (!function_exists('valtoken')) {
       }
 
       // Login Page
-      function loginpage($host, $secret) {
+      function loginpage($host, $secret, $simplemode) {
         $token = newtoken($secret);
-        echo '<link rel="shortcut icon" href="/plopbox/images/controls/favicon.gif" type="image/x-icon"/>';
-        echo '<link rel="stylesheet" type="text/css" href=' . $host . '/plopbox/style.css />';
-        echo '<div class="spotlight"></div>';
+        if ($simplemode == 0) {
+          echo '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">';
+        echo '<head><title>Log In</title><link rel="shortcut icon" href="/plopbox/images/controls/favicon.gif" type="image/x-icon">';
+        echo '<link rel="stylesheet" type="text/css" href="' . $host . '/plopbox/style.css"></head>';
         echo '<div class="loginpage"><div align="Center" id="loginbox" class="loginbox"><div class="loginlogo">plopbox</div>';
         echo '<div class="loginboxwrapper">';
         echo '<form class="loginform" action="' . $host . '" method="post" enctype="multipart/form-data"><input type="hidden" name="token" value="' . $token . '"><ul><li><label for="username">Username</label><input type="text" name="username" id="username"><span>Forgot your Username?</span></li><li><label for="password">Password</label><input type="password" name="password" id="password"><span>Forgot your Password?</span></li><li><input type="submit" value="Log In"></li></ul></form></div></div></div>';
         echo '<div class="loginpagebackground"></div>';
         echo '<div class="clouds"></div>';
+      } else if ($simplemode == 1) {
+        echo '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">';
+        echo '<head><title>Log In</title><link rel="shortcut icon" href="/plopbox/images/controls/favicon.gif" type="image/x-icon"></head>';
+        echo 'Log In<br><form action="' . $host . '/?simple=1" method="post" enctype="multipart/form-data"><input type="hidden" name="token" value="' . $token . '"><ul><li><label for="username">Username</label><input type="text" name="username" id="username"><span>Forgot your Username?</span></li><li><label for="password">Password</label><input type="password" name="password" id="password"><span>Forgot your Password?</span></li><li><input type="submit" value="Log In"></li></ul></form>';
+      }
         $token = null;
       }
       // Primary User Creation Page
-      function createpupage($host, $secret) {
+      function createpupage($host, $secret, $simplemode) {
         $putoken = newtoken($secret);
-        echo '<link rel="shortcut icon" href="/plopbox/images/controls/favicon.gif" type="image/x-icon"/>';
-        echo '<link rel="stylesheet" type="text/css" href=' . $host . '/plopbox/style.css />';
+        if ($simplemode == 0) {
+          echo '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">';
+        echo '<head><title>Create Primary User</title><link rel="shortcut icon" href="/plopbox/images/controls/favicon.gif" type="image/x-icon">';
+        echo '<link rel="stylesheet" type="text/css" href="' . $host . '/plopbox/style.css"></head>';
         echo '<div class="loginpage"><div align="Center" id="createpubox" class="loginbox"><div class="loginlogo">plopbox</div>';
         echo '<div class="loginboxwrapper">';
         echo 'Create Primary User Account<form class="loginform" action="' . $host . '" method="post" enctype="multipart/form-data"><input type="hidden" name="putoken" value="' . $putoken . '"><ul><li><label for="username">Username</label><input type="text" name="puusername" id="puusername"></li><li><label for="password">Password</label><input type="password" name="pupassword" id="pupassword"></li><li><input type="submit" value="Create User"></li></ul></form></div></div></div>';
         echo '<div class="loginpagebackground"></div>';
         echo '<div class="clouds"></div>';
+      } else if ($simplemode == 1) {
+        echo '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">';
+        echo '<head><title>Create Primary User</title><link rel="shortcut icon" href="/plopbox/images/controls/favicon.gif" type="image/x-icon"></head>';
+        echo 'Create Primary User Account<br><form action="' . $host . '/?simple=1" method="post" enctype="multipart/form-data"><input type="hidden" name="putoken" value="' . $putoken . '"><ul><li><label for="username">Username</label><input type="text" name="puusername" id="puusername"></li><li><label for="password">Password</label><input type="password" name="pupassword" id="pupassword"></li><li><input type="submit" value="Create User"></li></ul></form>';
+      }
         $putoken = null;
       }
 
@@ -201,19 +218,19 @@ if (!function_exists('valtoken')) {
                   @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg4 . PHP_EOL, FILE_APPEND) or logerror();
                 } else {
                   $_SESSION['stoken'] = false;
-                  echo '<div class="loginfailure">You have entered an incorrect username or password.</div>';
+                  echo '<script type="text/javascript">function msgclose() { document.getElementById("msg").style.visibility = "hidden"; }</script><div id="msg" style="visibility:visible;" class="failmsg">You have entered an incorrect username or password.<img alt="close" class="msgclose" onclick="msgclose()" src="/plopbox/images/controls/close.png"></div>';
                   loginpage($host, $secret);
                   $logmsg .= ' LOGIN PAGE, AUTH FAILURE: Wrong password for user "' . $_POST['username'] . '".';
                 }
               } else {
                 $_SESSION['stoken'] = false;
-                echo '<div class="loginfailure">You have entered an incorrect username or password.</div>';
-                loginpage($host, $secret);
+                echo '<script type="text/javascript">function msgclose() { document.getElementById("msg").style.visibility = "hidden"; }</script><div id="msg" style="visibility:visible;" class="failmsg">You have entered an incorrect username or password.<img alt="close" class="msgclose" onclick="msgclose()" src="/plopbox/images/controls/close.png"></div>';
+                loginpage($host, $secret, $simplemode);
                 $logmsg .= ' LOGIN PAGE, AUTH FAILURE: Username "' . $_POST['username'] . '" does not exist.';
               }
             } else if (valtoken($_POST['token'], $secret, 300) == false) {
               $_SESSION['stoken'] == false;
-              echo '<div class="loginfailure">Error: Invalid/Expired Token</div>';
+              echo '<div class="failmsg">Error: Invalid/Expired Token</div>';
               loginpage($host, $secret);
               $logmsg .= " LOGIN PAGE, AUTH FAILURE: INVALID/EXPIRED TOKEN";
             }
@@ -225,7 +242,7 @@ if (!function_exists('valtoken')) {
             exit;
           }
         } else if ($_SESSION['stoken'] == false) {
-          loginpage($host, $secret);
+          loginpage($host, $secret, $simplemode);
           $logmsg .= " LOGIN PAGE, OK";
         }
 
@@ -235,13 +252,13 @@ if (!function_exists('valtoken')) {
           if (!empty($_POST['putoken'])) {
             if (valtoken($_POST['putoken'], $secret, 300) == true) {
               createpu($db, $_POST['puusername'], $_POST['pupassword'], $droot, $logpath);
-              loginpage($host, $secret);
+              loginpage($host, $secret, $simplemode);
               $logmsg .= " LOGIN PAGE, OK: Primary User created!";
             } else if (valtoken($_POST['putoken'], $secret, 300) == false) {
               $_SESSION['stoken'] == false;
               $logmsg .= " PRIMARY USER CREATION PAGE, AUTH FAILURE: INVALID/EXPIRED TOKEN";
-              echo '<div class="loginfailure">Error: Invalid/Expired Token</div>';
-              createpupage($host, $secret);
+              echo '<script type="text/javascript">function msgclose() { document.getElementById("msg").style.visibility = "hidden"; }</script><div id="msg" style="visibility:visible;" class="failmsg">Error: Invalid/Expired Token<img alt="close" class="msgclose" onclick="msgclose()" src="/plopbox/images/controls/close.png"></div>';
+              createpupage($host, $secret, $simplemode);
             }
           } else {
             $_SESSION['stoken'] == false;
@@ -251,7 +268,7 @@ if (!function_exists('valtoken')) {
             exit;
           }
         } else {
-          createpupage($host, $secret);
+          createpupage($host, $secret, $simplemode);
           $logmsg .= " PRIMARY USER CREATION PAGE, OK";
         }
       }

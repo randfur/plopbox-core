@@ -124,6 +124,47 @@ position: absolute;
 	width:20px;
 }
 
+.msg {
+  position:fixed;
+  display:inline-block;
+  text-align:center;
+  font-family:"Ubuntu Mono";
+  color:#e6e6e6;
+  margin-top:-13px;
+  box-shadow:0px 3px 13px rgba(0, 0, 0, 0.4);
+  border-radius:10px;
+  border-bottom: 2px solid #004d1a;
+  background:#1b7e3c;
+  padding:17px;
+  width:100%;
+  height:40px;
+  z-index:11;
+}
+
+.failmsg {
+  position:fixed;
+  display:inline-block;
+  text-align:center;
+  font-family:"Ubuntu Mono";
+  color:#e6e6e6;
+  margin-top:-13px;
+  box-shadow:0px 3px 13px rgba(0, 0, 0, 0.4);
+  border-radius:10px;
+  border-bottom: 2px solid darkred;
+  background:#a82424;
+  padding:17px;
+  width:100%;
+  height:40px;
+  z-index:11;
+}
+
+.msgclose{
+position: absolute;
+  right:0;
+  margin-right:3px;
+	width:20px;
+}
+
 .boxwrapper {
 position: relative;
 top: 50%;
@@ -148,19 +189,21 @@ background-color:black;
 /* File Index Elements */
 
 .wrapper {
-  position:relative;
+  position:absolute;
+  display:block;
 	padding-top:83px;
 	width:100%;
   height:auto;
-  min-height:90%;
+  min-height:98%;
   min-width:630px;
   overflow:visible;
-  background-color:#f2f2f2:
+  background-color:#f2f2f2;
 }
 
 .entry {
-  display:block;
-  width:auto;
+  position:relative;
+  display:inline-block;
+  width:100%;
   height:43px;
   padding:5px;
   padding-left:10px;
@@ -179,10 +222,13 @@ background-color:black;
 }
 
 .dirempty {
+  position:relative;
   text-align:center;
   display:block;
-  margin-top:100px;
-  font-size:75pt;
+  width:100%;
+  height:auto;
+  margin-top:40px;
+  font-size:45pt;
 }
 
 .selectors {
@@ -234,35 +280,31 @@ background-color:black;
   font-size:.75em;
 }
 
-.footer {
-  position:absolute;
-  display:block;
+.footercontainer {
+  position:static;
+  display:inline-block;
   width:100%;
+  height:inherit;
+	padding-top:88px;
+  min-height:97%;
   min-width:630px;
-	text-align:center;
-	font-size:.75em;
-  padding-bottom:5px;
-  bottom:auto;
+  overflow:visible;
+}
+
+.footer {
+  display:block;
+  position:absolute;
+  border-top: 2px solid #e6e6e6;
+  width:100%;
+  height:90px;
+  min-width:630px;
+  padding-bottom:10px;
+  bottom:0;
+  text-align:center;
+  font-size:.75em;
 }
 
 /* Login Page */
-
-.loginfailure {
-  position:fixed;
-  display:inline-block;
-  text-align:center;
-  font-family:"Ubuntu Mono";
-  color:#e6e6e6;
-  margin-top:-13px;
-  box-shadow:0px 3px 13px rgba(0, 0, 0, 0.4);
-  border-radius:10px;
-  border-bottom: 2px solid darkred;
-  background:#a82424;
-  padding:17px;
-  width:100%;
-  height:40px;
-  z-index:11;
-}
 
 .loginlogo {
   position:relative;
@@ -274,21 +316,6 @@ background-color:black;
   text-shadow: 1px 2px 3px black;
   top: -70px; left: 0; bottom: 0; right: 0;
   z-index:11;
-}
-
-.spotlight{
-  display:inline;
-  overflow:hidden;
-  position:absolute;
-  top: 0; left: 0; bottom: 0; right: 0;
-  background-color:white;
-  margin:auto;
-  box-shadow: 0 0 50px 50px black, inset 0 0 200px 100px black;
-  opacity:0.07;
-  width:60%;
-  height:150%;
-  border-radius:50%;
-  z-index:10;
 }
 
 .clouds {
@@ -324,7 +351,7 @@ height:240px;
 background-color:#f2f2f2;
 box-shadow:0px 6px 13px rgba(0, 0, 0, 0.4);
 border-radius:10px;
-border:1px solid #666666und;
+border:1px solid #666666;
 z-index:11;
 }
 
@@ -503,7 +530,10 @@ html {
 	line-height:1em;
 }
 body {
-	-webkit-backface-visibility:hidden;
+  position:absolute;
+  display:flex;
+  min-height:100%;
+  width:100%;
 }
 code {
 	font-family:consolas,monospace;

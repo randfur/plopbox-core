@@ -22,25 +22,57 @@ if (!function_exists('valtoken')) {
         @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg3 . PHP_EOL, FILE_APPEND) or logerror();
         $_SESSION['stoken'] = false;
         header("HTTP/1.0 403 Forbidden");
+        exit;
       } else {
         $start = explode(' ', microtime())[0] + explode(' ', microtime())[1];
 
+        // Generate Navbar Array
+        $uriarray = explode('/', rtrim($interlink, '/'));
+        $navcount = 1;
+        $lastnav = '';
+        $navitem[] = '';
+        unset($uriarray[0]);
+        $uriarray = array_values($uriarray);
+        foreach ($uriarray as $uriitem) {
+          if ($simplemode == 0) {
+          $navitem[] = '<a href="' . $host . '/' . $lastnav .  $uriitem . '">' . $uriitem . '</a>';
+          $lastnav .= $uriitem . '/';
+          ++$navcount;
+        } else if ($simplemode == 1) {
+          $navitem[] = '<a href="' . $host . '/' . $lastnav .  $uriitem . '/?simple=1">' . $uriitem . '</a>';
+          $lastnav .= $uriitem . '/';
+          ++$navcount;
+        }
+        }
+
         // Load stylesheet/favicon, header, & file manager dialog boxes
-        echo '<link rel="shortcut icon" href="/plopbox/images/controls/favicon.gif" type="image/x-icon"/>';
         if ($simplemode === 1) {
-          echo 'Browsing: ' . $interlink;
+          echo '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+          "http://www.w3.org/TR/html4/loose.dtd">';
+          echo '<head><title>PlopBox Index - Browsing ' . $interlink . '</title><link rel="shortcut icon" href="/plopbox/images/controls/favicon.gif" type="image/x-icon"></head>';
+          echo '<a href="?logout=true&simple=1">Log Out</a><br>';
+          echo 'Browsing ';
+          foreach ($navitem as $naventry) {
+            echo $naventry . '/';
+          }
           echo '<br><a href="../?simple=1">Go Up a Directory</a>';
-          echo '<table><tr><td> </td><td><b>Name</b></td><td><b>Last Modified</b></td><td><b>Size</b></td></tr>';
+          echo '<table border="1"><tr><td> </td><td><b><a href="' . $interlink . '?sort=' . ($sortval ^ 1) . '&simple=1">Name</a></b></td><td><b>Last Modified</b></td><td><b>Size</b></td></tr>';
         } else if ($simplemode === 0){
-          echo '<link rel="stylesheet" type="text/css" href=' . $host . '/plopbox/style.css />';
+          echo '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+          "http://www.w3.org/TR/html4/loose.dtd">';
+          echo '<head><title>PlopBox Index - Browsing ' . $interlink . '</title><link rel="shortcut icon" href="/plopbox/images/controls/favicon.gif" type="image/x-icon">';
+          echo '<link rel="stylesheet" type="text/css" href="' . $host . '/plopbox/style.css"></head>';
           include '/plopbox/header.html';
+          if (!empty($opresult)) {
+            echo '<div style="visibility:visible;" id="msg" class="msg">' . $opresult . '<img alt="close" class="msgclose" onclick="msgclose()" src="/plopbox/images/controls/close.png"></div>';
+          }
 
           // "Upload File" Dialog Box
           $ftoken = newtoken($secret);
           echo '<div align="Center" id="uploadbox" style="visibility:hidden;" class="dialogbox">
-          <div class="titlebar">Upload File<img class="fileclose" onclick="uploadclose()" src="/plopbox/images/controls/close.png"></div>
+          <div class="titlebar">Upload File<img alt="close" class="fileclose" onclick="uploadclose()" src="/plopbox/images/controls/close.png"></div>
           <div class="boxwrapper">
-          <form action="' . $host . '?fileop=1" method="post" enctype="multipart/form-data">
+          <form action="' . $fullurl . '?fileop=1" method="post" enctype="multipart/form-data">
           Select file to upload:<br>
           <input type="hidden" name="ftoken" value="' . $ftoken . '">
           <input type="file" name="fileToUpload" id="fileToUpload"><br>
@@ -53,9 +85,9 @@ if (!function_exists('valtoken')) {
           // "Make New Folder" Dialog Box
           $ftoken = newtoken($secret);
           echo '<div align="Center" id="newfolderbox" style="visibility:hidden;" class="dialogbox">
-          <div class="titlebar">New Folder<img class="fileclose" onclick="newfolderclose()" src="/plopbox/images/controls/close.png"></div>
+          <div class="titlebar">New Folder<img alt="close" class="fileclose" onclick="newfolderclose()" src="/plopbox/images/controls/close.png"></div>
           <div class="boxwrapper">
-          <form action="' . $host . '?fileop=2" method="post" enctype="multipart/form-data">
+          <form action="?fileop=2" method="post" enctype="multipart/form-data">
           Name of new folder:<br>
           <input type="hidden" name="ftoken" value="' . $ftoken . '">
           <input type="text" name="foldername" id="foldername"><br>
@@ -68,28 +100,16 @@ if (!function_exists('valtoken')) {
           // "Move to Trash" Dialog Box
           $ftoken = newtoken($secret);
           echo '<div align="Center" id="trashbox" style="visibility:hidden;" class="dialogbox">
-          <div class="titlebar">Move Files to Trash<img class="fileclose" onclick="trashboxclose()" src="/plopbox/images/controls/close.png"></div>
+          <div class="titlebar">Move Files to Trash<img alt="close" class="fileclose" onclick="trashboxclose()" src="/plopbox/images/controls/close.png"></div>
           <div class="boxwrapper">
-          <form action="' . $host . '?fileop=3" method="post" enctype="multipart/form-data">
+          <form action="?fileop=3" method="post" enctype="multipart/form-data">
           Really delete X files?<br>
           <input type="hidden" name="ftoken" value="' . $ftoken . '">
           <input type="submit" value="Move to Trash" name="trashfiles">
           </form>
           </div>
           </div>';
-
-          // Generate Navbar Array
-          $uriarray = explode('/', rtrim($interlink, '/'));
-          $navcount = 1;
-          $lastnav = '';
-          $navitem[] = '';
-          unset($uriarray[0]);
-          $uriarray = array_values($uriarray);
-          foreach ($uriarray as $uriitem) {
-            $navitem[] = '<a href="' . $host . '/' . $lastnav .  $uriitem . '">' . $uriitem . '</a>';
-            $lastnav .= $uriitem . '/';
-            ++$navcount;
-          }
+          $ftoken = null;
 
           // Navbar, Column, & Wrapper
           echo '<div class="path">Browsing ';
@@ -97,9 +117,8 @@ if (!function_exists('valtoken')) {
             echo $naventry . '/';
           }
           echo '</div>';
-          echo '<div class="columns"><div class="cname"><a href=' . $interlink . '?sort=' . ($sortval ^ 1) . $smlink . '>Name</a></div><div class="ctime">Last Modified</div><div class="csize">Size</div></div><br>';
+          echo '<div class="columns"><div class="cname"><a href="' . $interlink . '?sort=' . ($sortval ^ 1) . $smlink . '">Name</a></div><div class="ctime">Last Modified</div><div class="csize">Size</div></div><br>';
           echo '<div class="wrapper">';
-          $ftoken = null;
         }
 
         // Scan the directory specified in the URI
@@ -147,9 +166,9 @@ if (!function_exists('valtoken')) {
               $fsize = sprintf("%.{$dec}f", $fsize / pow(1024, $sizefactor)) . ' <div class="sizefactor">' . @$csize[$sizefactor] . '</div>';
               // Populate file index arrays
               if ($simplemode === 1){
-                $files .= '<tr><td><a href="' . htmlentities($link) . '"><img src="' . $ficon . '" /></a></td><td class="indexcolname"><a href="' . htmlentities($link) . '">' . htmlentities($file) . ' ' . $mimed . '</a></td><td class="indexcollastmod">' . date( "M j, Y - g:iA", filemtime($ftarget)) . '</td><td class="indexcolsize">' . $fsize . '</td></tr>';
+                $files .= '<tr><td><a href="' . htmlentities($link) . '"><img alt="' . $file . '" src="' . $ficon . '"></a></td><td class="indexcolname"><a href="' . htmlentities($link) . '">' . htmlentities($file) . ' ' . $mimed . '</a></td><td class="indexcollastmod">' . date( "M j, Y - g:iA", filemtime($ftarget)) . '</td><td class="indexcolsize">' . $fsize . '</td></tr>';
               } else if ($simplemode === 0) {
-                $files .= '<div class="entry"><div class="selectors"><input id="' . $interlink . $file . '" type="checkbox" name="' . $file . '" value="' . $file . '"></div><div class="icon"><a href=' . rawurlencode($link) . '><img src="' . $ficon . '" /></a></div> <div class="name"><a href="' . htmlentities($link) . '">' . htmlentities($file) . ' ' . $mimed . '</a></div><div class="mtime">' . date( "M j, Y - g:iA", filemtime($ftarget)) . '</div><div class="size">' . $fsize . '</div></div>';
+                $files .= '<div class="entry"><div class="icon"><a href="' . rawurlencode($link) . '"><img alt="' . $file . '" src="' . $ficon . '"></a></div> <div class="name"><a href="' . htmlentities($link) . '">' . htmlentities($file) . ' ' . $mimed . '</a></div><div class="mtime">' . date( "M j, Y - g:iA", filemtime($ftarget)) . '</div><div class="size">' . $fsize . '</div></div>';
               }
             }
           }
@@ -175,9 +194,9 @@ if (!function_exists('valtoken')) {
               $fsize = ' ';
               $ficon = $host . '/plopbox/images/directory/folder.png';
               if ($simplemode === 1) {
-                $directories .= '<tr><td><a href="' . htmlentities($link) . '"><img src="' . $ficon . '" /></a></td><td class="indexcolname"><a href="' . htmlentities($link) . '">' . htmlentities($file) . '</a></td><td class="indexcollastmod">' . date( "M j, Y - g:iA", filemtime($ftarget)) . '</td><td class="indexcolsize">' . $fsize . '</td></tr>';
+                $directories .= '<tr><td><a href="' . rawurlencode($link) . '/?simple=1"><img alt="' . $dir . '" src="' . $ficon . '"></a></td><td class="indexcolname"><a href="' . htmlentities($link) . '/?simple=1">' . htmlentities($dir) . '</a></td><td class="indexcollastmod">' . date( "M j, Y - g:iA", filemtime($ftarget)) . '</td><td class="indexcolsize">' . $fsize . '</td></tr>';
               } else if ($simplemode === 0) {
-                $directories .= '<div class="entry"><div class="selectors"><input id="' . $interlink . $dir . '" type="checkbox" name="' . $dir . '" value="' . $dir . '"></div><div class="icon"><a href=' . rawurlencode($link) . '><img src="' . $ficon . '" /></a></div> <div class="name"><a href="' . htmlentities($link) . '">' . htmlentities($dir) . '</a></div><div class="mtime">' . date( "M j, Y - g:iA", filemtime($ftarget)) . '</div><div class="size">' . $fsize . '</div></div>';
+                $directories .= '<div class="entry"><div class="icon"><a href="' . rawurlencode($link) . '"><img alt="' . $dir . '" src="' . $ficon . '"></a></div> <div class="name"><a href="' . htmlentities($link) . '">' . htmlentities($dir) . '</a></div><div class="mtime">' . date( "M j, Y - g:iA", filemtime($ftarget)) . '</div><div class="size">' . $fsize . '</div></div>';
               }
             }
           }
@@ -191,11 +210,19 @@ if (!function_exists('valtoken')) {
         // Generate page navigation buttons
         if ($itemcount > $_SESSION['flimit']) {
           if ($fstart > 0) {
+            if ($simplemode == 0) {
             $paginator = '<a href="' . $host . $interlink . '?start=' . ($fstart - $_SESSION['flimit']) . '"><-- Previous Page </a>';
+          } else if ($simplemode == 1) {
+            $paginator = '<a href="' . $host . $interlink . '?start=' . ($fstart - $_SESSION['flimit']) . '&simple=1"><-- Previous Page </a>';
+          }
           }
           if ($itemcount + $_SESSION['flimit'] > $fstart) {
             if ($fstart + $_SESSION['flimit'] <= $itemcount) {
+              if ($simplemode = 0) {
               $paginator .= '<a href="' . $host . $interlink . '?start=' . ($fstart + $_SESSION['flimit']) . '"> Next Page --></a>';
+            } else if ($simplemode = 1) {
+              $paginator .= '<a href="' . $host . $interlink . '?start=' . ($fstart + $_SESSION['flimit']) . '&simple=1"> Next Page --></a>';
+            }
             }
           }
         }
@@ -203,12 +230,12 @@ if (!function_exists('valtoken')) {
         // Begin footer
         if ($simplemode === 1){
           echo '</table>';
-          echo '<br></div><div class="footer">' . $paginator . '<br>' . $itemcount . ' Items in Directory<br><a href="' . $interlink .'?simple=0">Deactivate Simple Mode (Turn CSS & JS On)</a>';
+          echo '<div class="footercontainer"><div class="footer">' . $paginator . '<br>' . $itemcount . ' Items in Directory<br><a href="' . $interlink .'?simple=0">Deactivate Simple Mode (Turn CSS & JS On)</a>';
         } else if ($simplemode === 0){
-          echo '<br></div><div class="footer">' . $paginator . '<br>' . $itemcount . ' Items in Directory<br><a href="' . $interlink . '?simple=1">Activate Simple Mode (Turn CSS & JS Off)</a>';
+          echo '<div class="footercontainer"><div class="footer">' . $paginator . '<br>' . $itemcount . ' Items in Directory<br><a href="' . $interlink . '?simple=1">Activate Simple Mode (Turn CSS & JS Off)</a>';
         }
         include '/plopbox/footer.html';
-        echo '<br>Index generated in ' . round((explode(' ', microtime())[0] + explode(' ', microtime())[1]) - $start, 4) . ' seconds.</div>';
+        echo '<br>Index generated in ' . round((explode(' ', microtime())[0] + explode(' ', microtime())[1]) - $start, 4) . ' seconds.</div></div></div>';
       }
     } else {
       $logmsg .= " INDEX CORE, ACCESS DENIED: MISSING CORE TOKEN (Suspicious!)";
