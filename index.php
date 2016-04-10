@@ -6,13 +6,14 @@ require "/plopbox/pbconf.php";
 require "/plopbox/pbfunc.php";
 $interlink = urldecode(strstr( $_SERVER['REQUEST_URI'], "?", true ) ?: $_SERVER['REQUEST_URI']);
 $host = ('http://' . $_SERVER['SERVER_NAME']);
-$smlink = $paginator = $dcount = $logmsg2 = $logmsg3 = $logmsg4 = $directories = $files = $stoperror = "";
+$fullurl = $host . $interlink;
+$smlink = $paginator = $dcount = $logmsg2 = $logmsg3 = $logmsg4 = $directories = $files = $stoperror = $opresult = "";
 $sortval = 0;
 
 // Setup timezone
-if (empty($timezone) == 0) {
+if (!empty($timezone)) {
   date_default_timezone_set($timezone);
-} else if (empty($timezone) == 1){
+} else if (empty($timezone)){
   $logmsg3 .= ' ERROR: $timezone variable not set in pbconf.php! Defaulting to UTC.';
   date_default_timezone_set("UTC");
 }
@@ -100,26 +101,31 @@ if (!empty($_GET['start'])) {
   $fstart = 0;
 }
 
-// Session & Login Manager (this thing is butt-ugly)
-// Start Session
+// Start session
 if (session_status() == PHP_SESSION_NONE) {
   session_start();
   if (!isset($_SESSION['stoken'])) {
     $_SESSION['stoken'] = false;
   }
+  if ($_SESSION['stoken'] !== false) {
+    if (valtoken($_SESSION['stoken'], $secret, 1800) == false) {
+      $_SESSION['stoken'] = false;
+    }
+  }
 }
 
 // Check if logging out
 if ($logout == true) {
-  $_SESSION['stoken'] = false;
-  $logmsg3 .= ': User "' . $_SESSION['user'] . '" logged out.';
+  if ($_SESSION['stoken'] !== false) {
+    $_SESSION['stoken'] = false;
+    $logmsg3 .= ': User "' . $_SESSION['user'] . '" logged out.';
+    header('Location: ' . $host );
+  }
 }
 
+// Session & Login Manager
 if (session_status() == PHP_SESSION_ACTIVE) {
-  if ($_SESSION['stoken'] == false) {
-    $ctoken = newtoken($secret);
-    require "plopbox/login.php";
-  } else if (valtoken($_SESSION['stoken'], $secret, 1800) == true) {
+  if (valtoken($_SESSION['stoken'], $secret, 1800) == true) {
     // Execute file operations
     if (isset($_GET['fileop'])) {
       if (!empty($_POST['ftoken'])) {
@@ -127,17 +133,17 @@ if (session_status() == PHP_SESSION_ACTIVE) {
           $ctoken = newtoken($secret);
           require "/plopbox/filemanager.php";
           if ($_GET['fileop'] == 1) {
-            if (!empty($_FILES["filetoupload"]["name"])) {
-              $opresult = uploadfile($_FILES["fileToUpload"]["name"], $droot, $interlink);
-            }
+            if (!empty($_FILES["fileToUpload"]["name"])) {
+              $opresult = uploadfile($_FILES["fileToUpload"]["name"], $droot, $interlink, $folderexclude);
+            } else { $opresult = "No File"; }
           } else if ($_GET['fileop'] == 2) {
             if (!empty($_POST["foldername"])) {
-              $opresult = newfolder($_POST["foldername"], $droot, $interlink);
-            }
+              $opresult = newfolder($_POST["foldername"], $droot, $interlink, $folderexclude);
+            } else { $opresult = "No folder name entered."; }
           } else if ($_GET['fileop'] == 3) {
             if (!empty($_POST["filestotrash"])) {
-              $opresult = (trashfile($_POST["filestotrash"], $droot, $interlink) == 0);
-            }
+              $opresult = trashfile($_POST["filestotrash"], $droot, $interlink, $folderexclude);
+            } else { $opresult = "No File"; }
           }
         } else {
           $logmsg .= " INVALID/EXPIRED FILE OPERATION TOKEN";
@@ -158,11 +164,15 @@ if (session_status() == PHP_SESSION_ACTIVE) {
   if (valtoken($_SESSION['stoken'], $secret, 1800) == true) {
     $ctoken = newtoken($secret);
     require "/plopbox/core.php";
+  } else {
+    $ctoken = newtoken($secret);
+    require "plopbox/login.php";
+    if (valtoken($_SESSION['stoken'], $secret, 1800) == true) {
+      $ctoken = newtoken($secret);
+      require "/plopbox/core.php";
+    }
   }
 }
-
-// Close database connection
-$db = null;
 
 // Write to access log
 @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg3 . PHP_EOL, FILE_APPEND) or logerror();
