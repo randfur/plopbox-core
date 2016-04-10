@@ -5,11 +5,11 @@
 // REQUIRED VARIABLES: You MUST configure these correctly for PlopBox to function:
 //------------------------------------------------------------------------------
 
-// REQUIRED: $droot: Absolute filesystem path of your HTTP document-root, without trailing slash.
+// REQUIRED: $droot: Absolute filesystem path of your HTTP document-root, WITHOUT trailing slash.
 // This folder should contain "index.php" and the "plopbox" folder.
 $droot="";
 
-// REQUIRED: $logpath: Absolute filesystem path to the PlopBox log folder, with trailing slash.
+// REQUIRED: $logpath: Absolute filesystem path to the PlopBox log folder, WITH trailing slash.
 //PlopBox will output a logfile named "pblog.txt" inside the specified folder.
 // You can use the folder located in "/plopbox/logs/".
 $logpath="";
@@ -44,7 +44,7 @@ $fileexclude="/^(\.htaccess$|\..*|index\.php$|plopbox|\._.*)$/";
 
 // $folderexclude: Directories PlopBox will not index.
 // /!\ ***CAUTION*** /!\ Does not affect filesystem permissions. Read technical notes.
-//Instead of indexing the directory, PlopBox will output "ACCESS DENIED".
+//Instead of indexing the directory, PlopBox will output HTTP status 403.
 //Default value is: "/^(.plopbox.*)$/";
 $folderexclude="/^(.plopbox.*)$/";
 
