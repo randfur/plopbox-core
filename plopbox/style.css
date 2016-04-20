@@ -8,7 +8,7 @@
 /* Header Elements */
 .header {
   position:fixed;
-  z-index:3;
+  z-index:5;
   background-image:url("/plopbox/images/controls/headerbg.png");
   background-position:center;
   width:100%;
@@ -36,11 +36,13 @@ width:auto;
 
 .path {
   position:fixed;
-  z-index:2;
-  min-width:630px;
+  z-index:4;
+  min-width:500px;
   font-family:"Ubuntu Mono";
   height:23px;
   width:100%;
+  text-overflow:ellipsis;
+  overflow:hidden;
   background-color:#edf1f5;
   border-bottom:1px solid lightgrey;
   margin-top:50px;
@@ -54,7 +56,7 @@ width:auto;
   z-index:1;
   font-family:"Ubuntu Mono";
   margin-top:73px;
-  min-width:630px;
+  min-width:500px;
   border-bottom:2px solid #d9d9d9;
   width:100%;
   height:28px;
@@ -66,7 +68,7 @@ width:auto;
   position:relative;
   float:left;
   top:5px;
-  left:55px;
+  left:65px;
 }
 
 .ctime {
@@ -74,7 +76,7 @@ width:auto;
   position:relative;
   float:right;
   top:5px;
-  right:31%;
+  right:18.5%;
   width:auto;
 }
 
@@ -171,16 +173,16 @@ top: 50%;
     left: 50%;
     margin-right: -50%;
 	transform: translate(-50%, -50%);
-	z-index:3;
+	z-index:6;
 }
 
 .dimthelights {
-z-index:4;
+z-index:5;
 position:fixed;
 margin:-28px;
 top:-5px;
-width:110%;
-height:110%;
+width:100%;
+height:100%;
 opacity:0.8;
 visibility:hidden;
 background-color:black;
@@ -189,13 +191,14 @@ background-color:black;
 /* File Index Elements */
 
 .wrapper {
+  top:0;
   position:absolute;
   display:block;
-	padding-top:83px;
+	padding-top:101px;
 	width:100%;
   height:auto;
-  min-height:98%;
-  min-width:630px;
+  min-height:99.9%;
+  min-width:500px;
   overflow:visible;
   background-color:#f2f2f2;
 }
@@ -204,6 +207,7 @@ background-color:black;
   position:relative;
   display:inline-block;
   width:100%;
+  min-width:500px;
   height:43px;
   padding:5px;
   padding-left:10px;
@@ -219,6 +223,16 @@ background-color:black;
 
 .entry:hover {
   background-color:#d9d9d9;
+}
+
+.entrylink {
+  position:absolute;
+  display:inline-block;
+  width:100%;
+  left:0;
+  height:100%;
+  bottom:0px;
+  z-index:2;
 }
 
 .dirempty {
@@ -251,16 +265,21 @@ background-color:black;
   display:inline;
   position:relative;
   float:left;
+  width:auto;
+  max-width:40%;
+  height:20px;
+  text-overflow:ellipsis;
+  overflow:hidden;
+  white-space:nowrap;
   left:53px;
   margin-top:8px;
-  width:auto;
 }
 
 .mtime {
   display:inline;
   position:relative;
   float:right;
-  right:30%;
+  right:18%;
   margin-top:8px;
   width:auto;
 }
@@ -270,7 +289,7 @@ background-color:black;
   position:relative;
   float:right;
   clear:right;
-  right:12px;
+  right:5px;
   margin-top:-16px;
   width:auto;
 }
@@ -280,15 +299,14 @@ background-color:black;
   font-size:.75em;
 }
 
-.footercontainer {
+.footerspacer {
   position:static;
   display:inline-block;
   width:100%;
-  height:inherit;
-	padding-top:88px;
-  min-height:97%;
-  min-width:630px;
+  height:28px;
+  min-width:500px;
   overflow:visible;
+  z-index:2
 }
 
 .footer {
@@ -296,12 +314,34 @@ background-color:black;
   position:absolute;
   border-top: 2px solid #e6e6e6;
   width:100%;
-  height:90px;
-  min-width:630px;
-  padding-bottom:10px;
+  height:auto;
+  min-width:500px;
+  padding-top:5px;
+  padding-bottom:5px;
   bottom:0;
   text-align:center;
-  font-size:.75em;
+  font-size:1em;
+}
+
+.paginatorbutton {
+  display:inline-block;
+  position:relative;
+  text-align:center;
+  height:30px;
+  width:130px;
+  margin-bottom:8px;
+  background-color:#f2f2f2;
+  border-radius:10px;
+  border:1px solid #666666;
+  z-index:4
+}
+
+.paginatortext {
+  display:block;
+  padding-top:1px;
+  height:30px;
+  width:auto;
+  z-index:5;
 }
 
 /* Login Page */
@@ -314,7 +354,7 @@ background-color:black;
   font-family:'Poiret One';
   font-size:80px;
   text-shadow: 1px 2px 3px black;
-  top: -70px; left: 0; bottom: 0; right: 0;
+  top: -65px; left: 0; bottom: 0; right: 0;
   z-index:11;
 }
 
@@ -328,22 +368,34 @@ background-color:black;
   position:absolute;
   overflow:hidden;
   opacity:0.07;
-  min-height:630px;
-  min-width:650px;
+  min-height:335px;
+  min-width:300px;
+}
+
+.simplemodelogin {
+  display:inline;
+  position:absolute;
+  bottom:0;
+  z-index:10;
+  text-shadow: 0px 0px 8px black;
+  color:lightgrey;
+  height:20px;
+  width:100%;
+  text-align:center;
 }
 
 .loginpage {
   width:100%;
   height:100%;
-  min-height:630px;
-  min-width:630px;
+  min-height:335px;
+  min-width:300px;
   overflow:hidden;
   display:inline;
   position:absolute;
 }
 
 .loginbox {
-  top: 0; left: 0; bottom: 0; right: 0;
+  top: 80px; left: 0; bottom: 0; right: 0;
 position:fixed;
 margin:auto;
 width:300px;
@@ -375,8 +427,8 @@ opacity:0.9;
 animation: loginpage 120s ease infinite;
 	width:100%;
   height:100%;
-  min-height:630px;
-  min-width:650px;
+  min-height:335px;
+  min-width:300px;
   overflow:hidden;
 }
 
@@ -520,9 +572,12 @@ animation: loginpage 120s ease infinite;
 	       box-sizing: border-box;
 }
 
+@-ms-viewport{
+  width:500px;
+}
+
 html {
 	min-height:100%;
-  min-width:650px;
 	color:#61666c;
 	font-weight:400;
 	font-size:1em;
