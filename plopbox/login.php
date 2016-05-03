@@ -10,20 +10,19 @@ if (session_status() == PHP_SESSION_ACTIVE) {
     exit;
   } else if (function_exists('valtoken')) {
     if (!empty($ctoken)) {
-      if (valtoken(session_id(), $ctoken, $secret, 10) === false) {
+      if (valtoken($db, session_id(), $ctoken, 'LPAGE', $secret, 10) === false) {
         $logmsg .= " LOGIN PAGE, ACCESS DENIED: INVALID/EXPIRED CORE TOKEN (Suspicious!)";
         @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg3 . PHP_EOL, FILE_APPEND) or logerror();
         $_SESSION['stoken'] = false;
         header("HTTP/1.0 403 Forbidden");
         exit;
-      } else if (valtoken(session_id(), $ctoken, $secret, 10) === true) {
+      } else if (valtoken($db, session_id(), $ctoken, 'LPAGE', $secret, 10) === true) {
         $ctoken = null;
 
         // Construct initial user table
         try {
-          $db->exec('CREATE TABLE IF NOT EXISTS users (uid TEXT PRIMARY KEY, uname TEXT, role TEXT, phash TEXT, flimit INTEGER)');
-        }
-        catch(PDOException $e) {
+          $db->exec('CREATE TABLE IF NOT EXISTS users (uid TEXT PRIMARY KEY, uname TEXT, phash TEXT, flimit INTEGER)');
+        } catch(PDOException $e) {
           $logmsg = ' ' . $e;
           @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg3 . PHP_EOL, FILE_APPEND) or logerror();
           $db = null;
@@ -31,13 +30,14 @@ if (session_status() == PHP_SESSION_ACTIVE) {
           exit($e);
         }
 
-        // Verify Administrator exists
+        // Verify Primary Administrator exists
         $pu = 0;
         try {
-          $sth = $db->query('SELECT role FROM users WHERE role = "1/1/1/1/1/1"');
+          $sth = $db->query('SELECT uid FROM users');
           while ($row = $sth->fetch(PDO::FETCH_ASSOC)) {
-            if (isset($row['role'])) {
-              if ($row['role'] === '1/1/1/1/1/1') {
+            if (isset($row['uid'])) {
+              $uid = explode('-', $row['uid'])[2];
+              if ($uid === '1/1/1/1/1/1/1/1/1') {
                 $pu = 1;
                 break;
               } else {
@@ -48,8 +48,7 @@ if (session_status() == PHP_SESSION_ACTIVE) {
             }
           }
           $sth = null;
-        }
-        catch(PDOException $e) {
+        } catch(PDOException $e) {
           $logmsg = ' ' . $e;
           @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg3 . PHP_EOL, FILE_APPEND) or logerror();
           $db = null;
@@ -58,10 +57,9 @@ if (session_status() == PHP_SESSION_ACTIVE) {
         }
 
         // Verify Username Exists
-        function finduname($db, $u, $droot, $logpath) {
+        function finduname($db, $u, $logpath) {
           try {
             $result = false;
-            $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $sth = $db->prepare('SELECT uname FROM users WHERE uname=:u');
             $sth->bindValue(':u', $u, PDO::PARAM_STR);
             $sth->execute();
@@ -79,10 +77,9 @@ if (session_status() == PHP_SESSION_ACTIVE) {
                 continue;
               }
             }
-            return $result;
             $sth = null;
-          }
-          catch(PDOException $e) {
+            return $result;
+          } catch(PDOException $e) {
             $logmsg = ' ' . $e;
             @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg3 . PHP_EOL, FILE_APPEND) or logerror();
             $db = null;
@@ -92,19 +89,18 @@ if (session_status() == PHP_SESSION_ACTIVE) {
         }
 
         // Find Password Hash, Role, and Page Item Limit for given Username
-        function fetchuserdata($db, $u, $droot, $logpath) {
+        function fetchuserdata($db, $u, $logpath) {
           try {
             $result = false;
-            $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            $sth = $db->prepare('SELECT uid, uname, role, phash, flimit FROM users WHERE uname=:u');
+            $sth = $db->prepare('SELECT uid, uname, phash, flimit FROM users WHERE uname=:u');
             $sth->bindValue(':u', $u, PDO::PARAM_STR);
             $sth->execute();
             while ($row = $sth->fetch(PDO::FETCH_ASSOC)) {
               if (isset($row['uname'])) {
-                if (isset($row['uid']) && isset($row['uname']) && isset($row['phash']) && isset($row['role']) && isset($row['flimit'])) {
+                if (isset($row['uid']) && isset($row['uname']) && isset($row['phash']) && isset($row['flimit'])) {
                   if ($row['uname'] == $u) {
                     $sth = null;
-                    $result = array('uid' => $row['uid'], 'uname' => $row['uname'], 'role' => $row['role'], 'phash' => $row['phash'], 'flimit' => $row['flimit']);
+                    $result = array('uid' => $row['uid'], 'uname' => $row['uname'], 'phash' => $row['phash'], 'flimit' => $row['flimit']);
                     break;
                   } else {
                     continue;
@@ -116,10 +112,9 @@ if (session_status() == PHP_SESSION_ACTIVE) {
                 $result = false;
               }
             }
-            return $result;
             $sth = null;
-          }
-          catch(PDOException $e) {
+            return $result;
+          } catch(PDOException $e) {
             $logmsg = ' ' . $e;
             @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg3 . PHP_EOL, FILE_APPEND) or logerror();
             $db = null;
@@ -129,18 +124,15 @@ if (session_status() == PHP_SESSION_ACTIVE) {
         }
 
         // Create Primary User
-        function createpu($db, $u, $p, $droot, $logpath, $secret) {
+        function createpu($db, $u, $p, $logpath, $secret) {
           try {
-            $phash = password_hash($p, PASSWORD_BCRYPT);
-            $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            $sth = $db->prepare('INSERT INTO users (uid, uname, role, phash, flimit) VALUES (:uid, :uname, "1/1/1/1/1/1", :phash, 50)');
-            $sth->bindValue(':uid', newuid($db, $u, '1/1/1/1/1/1', false, $secret));
+            $sth = $db->prepare('INSERT INTO users (uid, uname, phash, flimit) VALUES (:uid, :uname, :phash, 50)');
+            $sth->bindValue(':uid', newuid($db, $u, '1/1/1/1/1/1/1/1/1', $logpath, $secret));
             $sth->bindValue(':uname', $u);
-            $sth->bindValue(':phash', $phash);
+            $sth->bindValue(':phash', password_hash($p, PASSWORD_BCRYPT));
             $sth->execute();
             $sth = null;
-          }
-          catch(PDOException $e) {
+          } catch(PDOException $e) {
             $logmsg = ' ' . $e;
             @file_put_contents($logpath . "pblog.txt", $logmsg . PHP_EOL, FILE_APPEND) or logerror();
             $db = null;
@@ -151,14 +143,20 @@ if (session_status() == PHP_SESSION_ACTIVE) {
 
         // Login Page
         function loginpage($host, $secret, $simplemode) {
-          $token = newtoken(session_id(), $secret);
+          $token = newtoken(session_id(), 'LDATA', $secret);
           if ($simplemode == false) {
             echo '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
             "http://www.w3.org/TR/html4/loose.dtd">';
             echo '<head><title>Log In</title>
             <link rel="shortcut icon" href="/plopbox/images/controls/favicon.gif" type="image/x-icon">
             <link rel="stylesheet" type="text/css" href="' . $host . '/plopbox/style.css">
-            <meta name="viewport" content="width=300, minimum-scale=0.5, maximum-scale=1.0, user-scalable=no"></head>';
+            <meta name="viewport" content="width=300, minimum-scale=0.5, maximum-scale=1.0, user-scalable=no">
+            <script type="text/javascript">
+            function msgclose() {
+              document.getElementById("msg").style.visibility = "hidden";
+            }
+            </script>
+            </head>';
             echo '<div class="loginpage">
             <div align="Center" id="loginbox" class="loginbox">
             <div class="loginlogo">plopbox</div>
@@ -187,14 +185,20 @@ if (session_status() == PHP_SESSION_ACTIVE) {
         }
         // Primary User Creation Page
         function createpupage($host, $secret, $simplemode) {
-          $putoken = newtoken(session_id(), $secret);
+          $putoken = newtoken(session_id(), 'PUDATA', $secret);
           if ($simplemode == false) {
             echo '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
             "http://www.w3.org/TR/html4/loose.dtd">';
             echo '<head><title>Create Primary User</title>
             <link rel="shortcut icon" href="/plopbox/images/controls/favicon.gif" type="image/x-icon">
             <link rel="stylesheet" type="text/css" href="' . $host . '/plopbox/style.css">
-            <meta name="viewport" content="width=300, minimum-scale=0.5, maximum-scale=1.0, user-scalable=no"></head>';
+            <meta name="viewport" content="width=300, minimum-scale=0.5, maximum-scale=1.0, user-scalable=no">
+            <script type="text/javascript">
+            function msgclose() {
+              document.getElementById("msg").style.visibility = "hidden";
+            }
+            </script>
+            </head>';
             echo '<div class="loginpage">
             <div align="Center" id="createpubox" class="loginbox"><div class="loginlogo">plopbox</div>';
             echo '<div class="loginboxwrapper">
@@ -225,36 +229,53 @@ if (session_status() == PHP_SESSION_ACTIVE) {
         if ($pu == true) {
           if (!empty($_POST['username']) && !empty($_POST['password']) == true) {
             if (!empty($_POST['token'])) {
-              if (valtoken(session_id(), $_POST['token'], $secret, 300) == true) {
-                if (finduname($db, $_POST['username'], $droot, $logpath) !== false) {
-                  $udata = fetchuserdata($db, $_POST['username'], $droot, $logpath);
+              if (valtoken($db, session_id(), $_POST['token'], 'LDATA', $secret, $logpath, 300) == true) {
+                if (finduname($db, $_POST['username'], $logpath) !== false) {
+                  $udata = fetchuserdata($db, $_POST['username'], $logpath);
                   if (password_verify($_POST['password'], $udata['phash'])) {
-                    $_SESSION['flimit'] = $udata['flimit'];
-                    $_SESSION['user'] = $udata['uname'];
-                    $_SESSION['uid'] = newuid($db, $udata['uname'], $udata['role'], true, $secret);
-                    $_SESSION['stoken'] = newstoken(session_id(), $_SESSION['uid'], $udata['role'], $secret);
-                    $logmsg4 .= ' LOGIN PAGE, AUTH OK: User "' . $_SESSION['user'] . '" logged in successfully.';
-                    @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg4 . PHP_EOL, FILE_APPEND) or logerror();
+                    if (valuid($db, $udata['uid'], $udata['uname'], $secret, $logpath) !== 'invalid') {
+                      $_SESSION['uid'] = recalcuid($db, $udata['uid'], $udata['uname'], $secret, $logpath, true);
+                      $perm = valuid($db, $_SESSION['uid'], $udata['uname'], $secret, $logpath, 1800);
+                      if ($perm[0] === true) {
+                        $_SESSION['flimit'] = $udata['flimit'];
+                        $_SESSION['user'] = $udata['uname'];
+                        $_SESSION['stoken'] = newstoken(session_id(), $_SESSION['uid'], $secret);
+                        $logmsg4 .= ' LOGIN PAGE, AUTH OK: User "' . $_SESSION['user'] . '" logged in successfully.';
+                        @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg4 . PHP_EOL, FILE_APPEND) or logerror();
+                        Header("Location: " . $host);
+                        exit;
+                      } else {
+                        $_SESSION['stoken'] = $_SESSION['uid'] = $_SESSION['user'] = false;
+                        echo msg('custom', 'failmsg', 'Error: You are not allowed to log in.');
+                        loginpage($host, $secret, $simplemode);
+                        $logmsg .= ' LOGIN PAGE, AUTH FAILURE: User "' . $_POST['username'] . '" is not allowed to log in.';
+                      }
+                    } else {
+                      $_SESSION['stoken'] = $_SESSION['uid'] = $_SESSION['user'] = false;
+                      echo msg('custom', 'failmsg', 'FATAL DATABASE ERROR: Unable to log in.');
+                      loginpage($host, $secret, $simplemode);
+                      $logmsg .= ' LOGIN PAGE, FATAL DATABASE ERROR: UID for User "' . $_POST['username'] . '" has been tampered with! You must delete the user.';
+                    }
                   } else {
-                    $_SESSION['stoken'] = false;
-                    echo '<script type="text/javascript">function msgclose() { document.getElementById("msg").style.visibility = "hidden"; }</script><div id="msg" style="visibility:visible;" class="failmsg">You have entered an incorrect username or password.<img alt="close" class="msgclose" onclick="msgclose()" src="/plopbox/images/controls/close.png"></div>';
+                    $_SESSION['stoken'] = $_SESSION['uid'] = $_SESSION['user'] = false;
+                    echo msg('badlogin');
                     loginpage($host, $secret, $simplemode);
                     $logmsg .= ' LOGIN PAGE, AUTH FAILURE: Wrong password for user "' . $_POST['username'] . '".';
                   }
                 } else {
-                  $_SESSION['stoken'] = false;
-                  echo '<script type="text/javascript">function msgclose() { document.getElementById("msg").style.visibility = "hidden"; }</script><div id="msg" style="visibility:visible;" class="failmsg">You have entered an incorrect username or password.<img alt="close" class="msgclose" onclick="msgclose()" src="/plopbox/images/controls/close.png"></div>';
+                  $_SESSION['stoken'] = $_SESSION['uid'] = $_SESSION['user'] = false;
+                  echo msg('badlogin');
                   loginpage($host, $secret, $simplemode);
                   $logmsg .= ' LOGIN PAGE, AUTH FAILURE: Username "' . $_POST['username'] . '" does not exist.';
                 }
-              } else if (valtoken(session_id(), $_POST['token'], $secret, 300) == false) {
-                $_SESSION['stoken'] === false;
-                echo '<div class="failmsg">Error: Invalid/Expired Token</div>';
+              } else if (valtoken($db, session_id(), $_POST['token'], 'LDATA', $secret, 300) == false) {
+                $_SESSION['stoken'] = $_SESSION['uid'] = $_SESSION['user'] = false;
+                echo msg('badtoken');
                 loginpage($host, $secret, $simplemode);
                 $logmsg .= " LOGIN PAGE, AUTH FAILURE: INVALID/EXPIRED TOKEN";
               }
             } else {
-              $_SESSION['stoken'] = false;
+              $_SESSION['stoken'] = $_SESSION['uid'] = $_SESSION['user'] = false;
               $logmsg .= " LOGIN PAGE, AUTH FAILURE: NO TOKEN (Suspicious!)";
               @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg3 . PHP_EOL, FILE_APPEND) or logerror();
               header("HTTP/1.0 403 Forbidden");
@@ -265,19 +286,20 @@ if (session_status() == PHP_SESSION_ACTIVE) {
             $logmsg .= " LOGIN PAGE, OK";
           }
 
-          // "Create Primary User" Dialog Box
+          // "Create Primary Administrator" Dialog Box
         } else if ($pu == false) {
           if (!empty($_POST['puusername']) && !empty($_POST['pupassword'])) {
             if (!empty($_POST['putoken'])) {
-              if (valtoken(session_id(), $_POST['putoken'], $secret, 300) == true) {
-                createpu($db, $_POST['puusername'], $_POST['pupassword'], $droot, $logpath, $secret);
+              if (valtoken($db, session_id(), $_POST['putoken'], 'PUDATA', $secret, $logpath, 300) == true) {
+                createpu($db, $_POST['puusername'], $_POST['pupassword'], $secret, $logpath);
+                echo msg('custom', 'msg', 'Primary Administrator Account Created!');
                 loginpage($host, $secret, $simplemode);
                 $logmsg .= " LOGIN PAGE, OK: Primary User created!";
-              } else if (valtoken(session_id(), $_POST['putoken'], $secret, 300) == false) {
+              } else if (valtoken($db, session_id(), $_POST['putoken'], 'PUDATA', $secret, $logpath, 300) == false) {
                 $_SESSION['stoken'] == false;
                 $logmsg .= " PRIMARY USER CREATION PAGE, AUTH FAILURE: INVALID/EXPIRED TOKEN";
-                echo '<script type="text/javascript">function msgclose() { document.getElementById("msg").style.visibility = "hidden"; }</script><div id="msg" style="visibility:visible;" class="failmsg">Error: Invalid/Expired Token<img alt="close" class="msgclose" onclick="msgclose()" src="/plopbox/images/controls/close.png"></div>';
-                createpupage($host, $secret, $simplemode);
+                echo msg('badtoken');
+                Header('Location: ' . $host);
               }
             } else {
               $_SESSION['stoken'] == false;
@@ -299,9 +321,6 @@ if (session_status() == PHP_SESSION_ACTIVE) {
       header("HTTP/1.0 403 Forbidden");
       exit;
     }
-  } else {
-    header("HTTP/4.01 403 Forbidden");
-    exit;
   }
 } else {
   header("HTTP/4.01 403 Forbidden");

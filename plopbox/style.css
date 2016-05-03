@@ -101,8 +101,10 @@ width:auto;
 	height:150px;
 	background-color: lightgray;
   box-shadow:0px 1px 9px black;
+  border-radius:10px;
+  border:1px solid #666666;
   border:1px solid black;
-	z-index:5;
+	z-index:12;
 }
 
 .titlebar {
@@ -114,6 +116,7 @@ width:auto;
   width:298px;
   height:22px;
   background-image:url("/plopbox/images/controls/headerbgplain.png");
+  background-position:center;
   border-bottom:1px solid darkgrey;
   font-family:"Ubuntu Mono";
   font-size:.95em;
@@ -177,10 +180,8 @@ top: 50%;
 }
 
 .dimthelights {
-z-index:5;
+z-index:11;
 position:fixed;
-margin:-28px;
-top:-5px;
 width:100%;
 height:100%;
 opacity:0.8;
@@ -419,12 +420,12 @@ z-index:11;
 .loginpagebackground {
   position:absolute;
   display:inline;
-  background: linear-gradient(0deg, #d5c9b3, #5783a7);
-background-size: 400% 400%;
+  background: linear-gradient(0deg, #ae929f, #d5c9b3, #5783a7);
+background-size: 600% 600%;
 opacity:0.9;
--webkit-animation: loginpage 120s ease infinite;
--moz-animation: loginpage 120s ease infinite;
-animation: loginpage 120s ease infinite;
+-webkit-animation: loginpage 180s ease infinite;
+-moz-animation: loginpage 180s ease infinite;
+animation: loginpage 180s ease infinite;
 	width:100%;
   height:100%;
   min-height:335px;
@@ -557,9 +558,204 @@ animation: loginpage 120s ease infinite;
 .loginform input[type="button"]:hover{
     background-image:url("/plopbox/images/controls/headerbg.png");
     color:#4d4d4d;
+    cursor:pointer;
     border-bottom: 3px solid #5994FF;
     border-left:1px solid #b3cdff;
     border-right:1px solid #b3cdff;
+}
+
+/* Settings Page Elements */
+
+.swrapper {
+  top:0;
+  position:absolute;
+  display:block;
+	padding-top:90px;
+	width:100%;
+  height:100%;
+  min-height:500px;
+  min-width:500px;
+  overflow:visible;
+  background-color:#f2f2f2;
+}
+
+.scolumn {
+  position:absolute;
+  display:fixed;
+  padding-left:10px;
+  min-width:430px;
+  font-size:28px;
+  line-height:80px;
+  width:90%;
+  height:80%;
+  min-height:500px;
+  background-color:white;
+  left: 50%;
+  margin-right: -50%;
+transform: translate(-50%);
+overflow:auto;
+}
+
+.scontrolwrapper {
+  min-width:430px;
+  width:calc(100% + 10px);
+  height:50px;
+  margin-left:-10px;
+  background-image:url("/plopbox/images/controls/headerbgplain.png");
+  background-position:bottom;
+  border: 2px solid lightgrey;
+  border-bottom:2px solid #d9d9d9;
+}
+
+.scontrol {
+  line-height:normal;
+  display:block;
+  position:absolute;
+  padding-top:5px;
+  width:auto;
+  height:auto;
+  top:0;
+}
+
+.umcolumns {
+  min-width:430px;
+  position:absolute;
+  display:inline-block;
+  z-index:1;
+  margin-left:-10px;
+  font-size:15px;
+  font-family:"Ubuntu Mono";
+  border-bottom:2px solid #d9d9d9;
+  width:100%;
+  height:28px;
+  background-color:white;
+}
+
+.scname {
+  display:block;
+  position:absolute;
+  padding-left:5px;
+  height:15px;
+  width:33%;
+  top:-20px;
+}
+
+.scperms {
+  display:block;
+  position:absolute;
+  text-align:center;
+  height:15px;
+  right:33%;
+  width:33%;
+  top:-20px;
+}
+
+.sctime {
+  display:block;
+  position:absolute;
+  text-align:right;
+  right:0;
+  padding-right:5px;
+  height:15px;
+  width:33%;
+  top:-20px;
+}
+
+.buttonbar {
+  display:inline;
+  position:fixed;
+  z-index:4;
+  min-width:500px;
+  font-family:"Ubuntu Mono";
+  height:40px;
+  width:100%;
+  overflow:hidden;
+  background-color:#edf1f5;
+  border-bottom:1px solid lightgrey;
+  padding-left:10px;
+  padding-top:3px;
+  margin-top:50px;
+  text-align:center;
+}
+
+.spagebutton {
+  display:inline-block;
+  position:relative;
+  text-align:center;
+  cursor:pointer;
+  height:50px;
+  width:140px;
+  margin-bottom:8px;
+  background-color:#f2f2f2;
+  border-radius:10px;
+  border:1px solid #666666;
+  z-index:4
+}
+
+.spagebuttontext {
+  display:block;
+  font-size:19px;
+  cursor:pointer;
+  padding-top:1px;
+  height:30px;
+  width:auto;
+  z-index:5;
+}
+
+.sentry {
+  position:relative;
+  display:inline-block;
+  margin-left:-10px;
+  width:calc(100% + 10px);
+  min-width:430px;
+  height:43px;
+  padding:5px;
+  padding-left:10px;
+  padding-right:10px;
+  background-color:#f2f2f2;
+  border-bottom:1px solid #e6e6e6;
+  -webkit-transition:background 300ms ease;
+     -moz-transition:background 300ms ease;
+      -ms-transition:background 300ms ease;
+       -o-transition:background 300ms ease;
+          transition:background 300ms ease;
+}
+
+.sentrywrapper {
+  width:calc(100% + 10px);
+  margin-left:-10px;
+  height:auto;
+  padding-top:28px;
+}
+
+.username {
+  line-height:normal;
+  display:block;
+  position:absolute;
+  width:33%;
+  top:-2px;
+}
+
+.permflags {
+  line-height:normal;
+  display:block;
+  position:absolute;
+  text-align:center;
+  white-space:nowrap;
+  right:33%;
+  width:33%;
+  top:0.5px;
+}
+
+.ltime {
+  line-height:normal;
+  display:block;
+  position:absolute;
+  text-align:right;
+  right:0;
+  padding-right:5px;
+  width:33%;
+  top:-2px;
 }
 
 /* Misc */
