@@ -1,0 +1,4 @@
+# BEGIN PLOPBOX
+Options -Indexes +FollowSymlinks
+Deny From All
+# END PLOPBOX
