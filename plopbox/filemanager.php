@@ -13,9 +13,7 @@ if (session_status() == PHP_SESSION_ACTIVE) {
       if (valtoken($db, session_id(), $ctoken, 'FMANAGER', $secret, $logpath, 10) == false) {
         $logmsg .= " FILE MANAGER, ACCESS DENIED: MISSING/INVALID/EXPIRED CORE TOKEN (Suspicious!)";
         @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg3 . PHP_EOL, FILE_APPEND) or logerror();
-        retire($db, 'token', $_SESSION['stoken'], $logpath);
-        retire($db, 'uid', $_SESSION['uid'], $logpath);
-        $_SESSION['stoken'] = $_SESSION['uid'] = $_SESSION['user'] = false;
+        logout($db, $logpath, $logmsg);
         header("HTTP/1.0 403 Forbidden");
         exit;
       } else if (valtoken($db, session_id(), $ctoken, 'FMANAGER', $secret, $logpath, 10) == true) {
@@ -23,10 +21,9 @@ if (session_status() == PHP_SESSION_ACTIVE) {
         if (valstoken($db, session_id(), $_SESSION['uid'], $_SESSION['stoken'], $secret, $logpath, 1800) == false) {
           $logmsg .= " FILE MANAGER, ACCESS DENIED: INVALID/EXPIRED SESSION TOKEN";
           @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg3 . PHP_EOL, FILE_APPEND) or logerror();
-          retire($db, 'token', $_SESSION['stoken'], $logpath);
-          retire($db, 'uid', $_SESSION['uid'], $logpath);
-          $_SESSION['stoken'] = $_SESSION['uid'] = $_SESSION['user'] = false;
+          logout($db, $logpath, $logmsg, ': Session Token for User "' . $_SESSION['user'] . '" is invalid or expired. Logging user out.');
           header("HTTP/1.0 403 Forbidden");
+          exit;
         } else {
 
           // Upload a File

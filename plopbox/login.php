@@ -10,18 +10,18 @@ if (session_status() == PHP_SESSION_ACTIVE) {
     exit;
   } else if (function_exists('valtoken')) {
     if (!empty($ctoken)) {
-      if (valtoken($db, session_id(), $ctoken, 'LPAGE', $secret, 10) === false) {
+      if (valtoken($db, session_id(), $ctoken, 'LPAGE', $secret, $logpath, 10) === false) {
         $logmsg .= " LOGIN PAGE, ACCESS DENIED: INVALID/EXPIRED CORE TOKEN (Suspicious!)";
         @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg3 . PHP_EOL, FILE_APPEND) or logerror();
         $_SESSION['stoken'] = false;
         header("HTTP/1.0 403 Forbidden");
         exit;
-      } else if (valtoken($db, session_id(), $ctoken, 'LPAGE', $secret, 10) === true) {
+      } else if (valtoken($db, session_id(), $ctoken, 'LPAGE', $secret, $logpath, 10) === true) {
         $ctoken = null;
 
         // Construct initial user table
         try {
-          $db->exec('CREATE TABLE IF NOT EXISTS users (uid TEXT PRIMARY KEY, uname TEXT, phash TEXT, flimit INTEGER)');
+          $db->exec('CREATE TABLE IF NOT EXISTS users (uid TEXT, uname TEXT, phash TEXT, flimit INTEGER)');
         } catch(PDOException $e) {
           $logmsg = ' ' . $e;
           @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg3 . PHP_EOL, FILE_APPEND) or logerror();
@@ -163,8 +163,8 @@ if (session_status() == PHP_SESSION_ACTIVE) {
             <div class="loginboxwrapper">';
             echo '<form class="loginform" action="' . $host . '" method="post" enctype="multipart/form-data">
             <input type="hidden" name="token" value="' . $token . '">
-            <ul><li><label for="username">Username</label><input type="text" name="username" id="username"><span>Forgot your Username?</span></li>
-            <li><label for="password">Password</label><input type="password" name="password" id="password"><span>Forgot your Password?</span></li>
+            <ul><li><label for="username">Username</label><input type="text" autocomplete="new-username" name="username" id="username" maxlength="20"><span>Forgot your Username?</span></li>
+            <li><label for="password">Password</label><input type="password" autocomplete="new-password" name="password" id="password" maxlength="32"><span>Forgot your Password?</span></li>
             <li><input type="submit" value="Log In"></li></ul></form>
             </div></div></div>';
             echo '<div class="loginpagebackground"></div>
@@ -176,8 +176,8 @@ if (session_status() == PHP_SESSION_ACTIVE) {
             echo '<head><title>Log In</title><link rel="shortcut icon" href="/plopbox/images/controls/favicon.gif" type="image/x-icon"></head>';
             echo 'Log In<br><form action="' . $host . '/?simple=1" method="post" enctype="multipart/form-data">
             <input type="hidden" name="token" value="' . $token . '">
-            <ul><li><label for="username">Username</label><input type="text" name="username" id="username"><span>Forgot your Username?</span></li>
-            <li><label for="password">Password</label><input type="password" name="password" id="password"><span>Forgot your Password?</span></li>
+            <ul><li><label for="username">Username</label><input type="text" autocomplete="new-username" name="username" id="username" maxlength="20"><span>Forgot your Username?</span></li>
+            <li><label for="password">Password</label><input type="password" autocomplete="new-password" name="password" id="password" maxlength="32"><span>Forgot your Password?</span></li>
             <li><input type="submit" value="Log In"></li></ul></form>
             <a class="simplemodelogin" href="/?simple=false">Deactivate Simple Mode (Turn CSS &amp; JS On)</a>';
           }
@@ -204,8 +204,8 @@ if (session_status() == PHP_SESSION_ACTIVE) {
             echo '<div class="loginboxwrapper">
             Create Primary User Account<form class="loginform" action="' . $host . '" method="post" enctype="multipart/form-data">
             <input type="hidden" name="putoken" value="' . $putoken . '">
-            <ul><li><label for="username">Username</label><input type="text" name="puusername" id="puusername"></li>
-            <li><label for="password">Password</label><input type="password" name="pupassword" id="pupassword"></li>
+            <ul><li><label for="username">Username</label><input type="text" autocomplete="new-username" name="puusername" id="puusername" maxlength="20"></li>
+            <li><label for="password">Password</label><input type="password" autocomplete="new-password" name="pupassword" id="pupassword" maxlength="32"></li>
             <li><input type="submit" value="Create User"></li></ul></form></div></div></div>';
             echo '<div class="loginpagebackground"></div>
             <div class="clouds"></div>
@@ -217,8 +217,8 @@ if (session_status() == PHP_SESSION_ACTIVE) {
             <link rel="shortcut icon" href="/plopbox/images/controls/favicon.gif" type="image/x-icon"></head>';
             echo 'Create Primary User Account<br><form action="' . $host . '/?simple=1" method="post" enctype="multipart/form-data">
             <input type="hidden" name="putoken" value="' . $putoken . '">
-            <ul><li><label for="username">Username</label><input type="text" name="puusername" id="puusername"></li>
-            <li><label for="password">Password</label><input type="password" name="pupassword" id="pupassword"></li>
+            <ul><li><label for="username">Username</label><input type="text" autocomplete="new-username" name="puusername" id="puusername" maxlength="20"></li>
+            <li><label for="password">Password</label><input type="password" autocomplete="new-password" name="pupassword" id="pupassword" maxlength="32"></li>
             <li><input type="submit" value="Create User"></li></ul></form>
             <a class="simplemodelogin" href="/?simple=false">Deactivate Simple Mode (Turn CSS &amp; JS On)</a>';
           }
@@ -229,6 +229,8 @@ if (session_status() == PHP_SESSION_ACTIVE) {
         if ($pu == true) {
           if (!empty($_POST['username']) && !empty($_POST['password']) == true) {
             if (!empty($_POST['token'])) {
+
+              // Attempt to log a user in
               if (valtoken($db, session_id(), $_POST['token'], 'LDATA', $secret, $logpath, 300) == true) {
                 if (finduname($db, $_POST['username'], $logpath) !== false) {
                   $udata = fetchuserdata($db, $_POST['username'], $logpath);
@@ -242,8 +244,10 @@ if (session_status() == PHP_SESSION_ACTIVE) {
                         $_SESSION['stoken'] = newstoken(session_id(), $_SESSION['uid'], $secret);
                         $logmsg4 .= ' LOGIN PAGE, AUTH OK: User "' . $_SESSION['user'] . '" logged in successfully.';
                         @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg4 . PHP_EOL, FILE_APPEND) or logerror();
-                        Header("Location: " . $host);
+                        header('Location: /');
                         exit;
+
+                        // ... or load the dialog box.
                       } else {
                         $_SESSION['stoken'] = $_SESSION['uid'] = $_SESSION['user'] = false;
                         echo msg('custom', 'failmsg', 'Error: You are not allowed to log in.');
@@ -268,7 +272,7 @@ if (session_status() == PHP_SESSION_ACTIVE) {
                   loginpage($host, $secret, $simplemode);
                   $logmsg .= ' LOGIN PAGE, AUTH FAILURE: Username "' . $_POST['username'] . '" does not exist.';
                 }
-              } else if (valtoken($db, session_id(), $_POST['token'], 'LDATA', $secret, 300) == false) {
+              } else if (valtoken($db, session_id(), $_POST['token'], 'LDATA', $secret, $logpath, 300) == false) {
                 $_SESSION['stoken'] = $_SESSION['uid'] = $_SESSION['user'] = false;
                 echo msg('badtoken');
                 loginpage($host, $secret, $simplemode);
@@ -299,7 +303,7 @@ if (session_status() == PHP_SESSION_ACTIVE) {
                 $_SESSION['stoken'] == false;
                 $logmsg .= " PRIMARY USER CREATION PAGE, AUTH FAILURE: INVALID/EXPIRED TOKEN";
                 echo msg('badtoken');
-                Header('Location: ' . $host);
+                header('Location: /');
               }
             } else {
               $_SESSION['stoken'] == false;

@@ -1,5 +1,5 @@
 <?php
-// PlopBox Filebrowser Index Core
+// PlopBox Filebrowser File Index
 
 // Check Core Mothership Token
 if (session_status() == PHP_SESSION_ACTIVE) {
@@ -13,6 +13,7 @@ if (session_status() == PHP_SESSION_ACTIVE) {
       if (valtoken($db, session_id(), $ctoken, 'CORE', $secret, $logpath, 10) === false) {
         $logmsg .= " INDEX CORE, ACCESS DENIED: INVALID/EXPIRED CORE TOKEN (Suspicious!)";
         @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg3 . PHP_EOL, FILE_APPEND) or logerror();
+        logout($db, $logpath, $logmsg);
         header("HTTP/4.01 403 Forbidden");
         exit;
       } else if (valtoken($db, session_id(), $ctoken, 'CORE', $secret, $logpath, 10) === true) {
@@ -20,16 +21,20 @@ if (session_status() == PHP_SESSION_ACTIVE) {
         if (valstoken($db, session_id(), $_SESSION['uid'], $_SESSION['stoken'], $secret, $logpath, 1800) === false) {
           $logmsg .= " INDEX CORE, ACCESS DENIED: INVALID/EXPIRED SESSION TOKEN";
           @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg3 . PHP_EOL, FILE_APPEND) or logerror();
-          retire($db, 'token', $_SESSION['stoken'], $logpath);
-          retire($db, 'uid', $_SESSION['uid'], $logpath);
-          $_SESSION['stoken'] = $_SESSION['uid'] = $_SESSION['user'] = false;
+          logout($db, $logpath, $logmsg, ': Session Token for User "' . $_SESSION['user'] . '" is invalid or expired. Logging user out.');
           header("HTTP/4.01 403 Forbidden");
           exit;
         } else {
 
           if ($perm[0] && $perm[1] === true) {
             // Scan the directory specified in the URI
-            $dcont = scandir(($droot . $interlink), $sort);
+            if (!file_exists($droot . $interlink)) {
+              header("HTTP/4.01 404 Not Found");
+              include "plopbox/templates/404.html";
+              exit;
+            } else {
+              $dcont = scandir(($droot . $interlink), $sort);
+            }
             // Remove excluded items from directory file array
             foreach ($dcont as $file) {
               if (preg_match($fileexclude, $file) == 1) {
@@ -44,7 +49,7 @@ if (session_status() == PHP_SESSION_ACTIVE) {
               if (preg_match($fileexclude, $file) === 1) {
                 continue;
               } else {
-                $ftarget = $droot . '/' . $interlink . $file;
+                $ftarget = $droot . '/' . $interlink . '/' . $file;
                 if (is_dir($ftarget)) {
                   ++$dcount;
                   $ddcont[$dkey]['item'] = $file;
@@ -142,8 +147,8 @@ if (session_status() == PHP_SESSION_ACTIVE) {
               $fkey = 0;
               foreach (array_slice($entries, $fstart, $_SESSION['flimit']) as $file) {
                 // Define the target file/folder
-                $ftarget = $droot . '/' . $interlink . $file['item'];
-                $link = $file['item'];
+                $ftarget = $droot . '/' . $interlink . '/' . $file['item'];
+                $link = $fullurl . '/' . urlencode($file['item']);
                 if (!is_dir($ftarget)) {
                   // Process Files
                   // Assign icon based on MIME type
@@ -167,12 +172,12 @@ if (session_status() == PHP_SESSION_ACTIVE) {
                   $files[$fkey]['date'] = $file['date'];
                   // Format file entry
                   if ($simplemode == true){
-                    $fentries[$fkey]['item'] = '<tr><td><a href="' . htmlentities($link) . '"><img alt="' . $file['item'] . '" src="' . $ficon . '"></a></td>
-                    <td class="indexcolname"><a href="' . htmlentities($link) . '">' . htmlentities($file['item']) . ' ' . $mimed . '</a></td>
+                    $fentries[$fkey]['item'] = '<tr><td><a href="' . $link . '"><img alt="' . $file['item'] . '" src="' . $ficon . '"></a></td>
+                    <td class="indexcolname"><a href="' . $link . '">' . htmlentities($file['item']) . ' ' . $mimed . '</a></td>
                     <td class="indexcollastmod">' . date( "M j, Y - g:iA", $file['date']) . '</td>
                     <td class="indexcolsize">' . $fsize . '</td></tr>';
                   } else if ($simplemode == false) {
-                    $fentries[$fkey]['item'] = '<div class="entry"><a href="' . rawurlencode($link) . '"><span title="' . htmlentities($file['item']) . '" class="entrylink"></span></a>
+                    $fentries[$fkey]['item'] = '<div class="entry"><a href="' . $link . '"><span title="' . htmlentities($file['item']) . '" class="entrylink"></span></a>
                     <div class="icon"><img alt="' . $file['item'] . '" src="' . $ficon . '"></div>
                     <div class="name">' . htmlentities($file['item']) . ' ' . $mimed . '</div>
                     <div class="mtime">' . date( "M j, Y - g:iA", $file['date']) . '</div>
@@ -186,19 +191,19 @@ if (session_status() == PHP_SESSION_ACTIVE) {
                   // Inherit Simplemode URI arument in link
                   if (isset($_GET['simple'])) {
                     if ($simplemode == true) {
-                      $link = $file['item'] . '/?simple=true';
+                      $link = $fullurl . '/' . $file['item'] . '/?simple=true';
                     } else if ($simplemode == false) {
-                      $link = $file['item'] . '/?simple=false';
+                      $link = $fullurl . '/' . $file['item'] . '/?simple=false';
                     }
                   }
                   // Format directory entry
                   if ($simplemode == true) {
-                    $fentries[$fkey]['item'] = '<tr><td><a href="' . rawurlencode($link) . '/?simple=true"><img alt="' . $file['item'] . '" src="' . $ficon . '"></a></td>
-                    <td class="indexcolname"><a href="' . htmlentities($link) . '/?simple=true">' . htmlentities($file['item']) . '</a></td>
+                    $fentries[$fkey]['item'] = '<tr><td><a href="' . $link . '/?simple=true"><img alt="' . $file['item'] . '" src="' . $ficon . '"></a></td>
+                    <td class="indexcolname"><a href="' . $link . '/?simple=true">' . htmlentities($file['item']) . '</a></td>
                     <td class="indexcollastmod">' . date( "M j, Y - g:iA", $file['date']) . '</td>
                     <td class="indexcolsize">' . $fsize . '</td></tr>';
                   } else if ($simplemode == false) {
-                    $fentries[$fkey]['item'] = '<div class="entry"><a href="' . rawurlencode($link) . '"><span title="' . htmlentities($file['item']) . '" class="entrylink"></span></a>
+                    $fentries[$fkey]['item'] = '<div class="entry"><a href="' . $link . '"><span title="' . htmlentities($file['item']) . '" class="entrylink"></span></a>
                     <div class="icon"><img alt="' . $file['item'] . '" src="' . $ficon . '"></div>
                     <div class="name">' . htmlentities($file['item']) . '</div>
                     <div class="mtime">' . date( "M j, Y - g:iA", $file['date']) . '</div>
@@ -214,14 +219,13 @@ if (session_status() == PHP_SESSION_ACTIVE) {
               $logmsg .= ' INDEX CORE, OK: LISTING ' . $itemcount . ' ITEMS';
             }
           }
+          $ctoken = $ctoken = newtoken(session_id(), 'MAIN', $secret);
           require "plopbox/templates/main.php";
         }
       } else {
         $logmsg .= " INDEX CORE, ACCESS DENIED: MISSING CORE TOKEN (Suspicious!)";
         @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg3 . PHP_EOL, FILE_APPEND) or logerror();
-        retire($db, 'token', $_SESSION['stoken'], $logpath);
-        retire($db, 'uid', $_SESSION['uid'], $logpath);
-        $_SESSION['stoken'] = $_SESSION['uid'] = $_SESSION['user'] = false;
+        logout($db, $logpath, $logmsg);
         header("HTTP/4.01 403 Forbidden");
         exit;
       }

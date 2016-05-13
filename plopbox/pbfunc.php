@@ -8,6 +8,20 @@ if (isset($func)) {
     syslog(LOG_ERR, 'PlopBox: ERROR writing PlopBox log! Check "logpath" in pbconf.ini');
   }
 
+  // Process Log-Out
+  function logout($db, $logpath, $logmsg, $extra = null) {
+    retire($db, 'token', $_SESSION['stoken'], $logpath);
+    retire($db, 'uid', $_SESSION['uid'], $logpath);
+    $_SESSION['stoken'] = $_SESSION['uid'] = $_SESSION['user'] = false;
+    if ($extra !== null) {
+      $logmsg .= $extra;
+    } else {
+      $logmsg .= ': User "' . $_SESSION['user'] . '" has logged out.';
+    }
+    @file_put_contents($logpath . "pblog.txt", $logmsg . PHP_EOL, FILE_APPEND) or logerror();
+  }
+
+  // Message Bar
   function msg($type, $nature = 'msg', $custom = '') {
     switch ($type) {
       case 'badtoken':
@@ -61,8 +75,8 @@ if (isset($func)) {
     return $files;
   }
 
-// Remove expired token/uid hashes from the illegal lists
-// (1 in 5 chance)
+  // Remove expired token/uid hashes from the illegal lists
+  // (1 in 5 chance)
   function gc($db, $logpath) {
     if (mt_rand(0, 5) === 3) {
       try {
@@ -265,6 +279,7 @@ if (isset($func)) {
     return $check;
   }
 
+  // Generate new User ID from permission string
   function newuid($db, $u, $r, $s, $logpath, $update = false) {
     $rand = dechex(mt_rand(1000000000, 9999999999));
     $time = dechex(time());
@@ -291,7 +306,7 @@ if (isset($func)) {
     }
   }
 
-  // Generate User ID
+  // Generate new User ID from old User ID
   function recalcuid($db, $olduid, $u, $s, $logpath, $update = false) {
     $uidrole = explode('-', $olduid)['2'];
     $rand = dechex(mt_rand(1000000000, 9999999999));

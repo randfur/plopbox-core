@@ -1,5 +1,6 @@
 <?php
-// PlopBox User Management Module
+// PlopBox Settings & Users Management Module
+
 // Check Core Mothership Token
 if (session_status() == PHP_SESSION_ACTIVE) {
   if (!function_exists('valtoken')) {
@@ -12,6 +13,7 @@ if (session_status() == PHP_SESSION_ACTIVE) {
       if (valtoken($db, session_id(), $ctoken, 'ADMIN', $secret, $logpath, 10) == false) {
         $logmsg .= " SETTINGS, ACCESS DENIED: INVALID/EXPIRED CORE TOKEN (Suspicious!)";
         @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg3 . PHP_EOL, FILE_APPEND) or logerror();
+        logout($db, $logpath, $logmsg);
         header("HTTP/4.01 403 Forbidden");
         exit;
       } else if (valtoken($db, session_id(), $ctoken, 'ADMIN', $secret, $logpath, 10) == true) {
@@ -19,9 +21,7 @@ if (session_status() == PHP_SESSION_ACTIVE) {
         if (valstoken($db, session_id(), $_SESSION['uid'], $_SESSION['stoken'], $secret, 1800) == false) {
           $logmsg .= " SETTINGS, ACCESS DENIED: INVALID/EXPIRED SESSION TOKEN";
           @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg3 . PHP_EOL, FILE_APPEND) or logerror();
-          retire($db, 'token', $_SESSION['stoken']);
-          retire($db, 'uid', $_SESSION['uid']);
-          $_SESSION['stoken'] = $_SESSION['uid'] = $_SESSION['user'] = false;
+          logout($db, $logpath, $logmsg, ': Session Token for User "' . $_SESSION['user'] . '" is invalid or expired. Logging user out.');
           header("HTTP/4.01 403 Forbidden");
           exit;
         } else {
@@ -104,8 +104,8 @@ if (session_status() == PHP_SESSION_ACTIVE) {
                 break;
               }
             } else {
-              header('Location: ' . $host );
-              echo msg(noperm_settings);
+              header('Location: /');
+              echo msg('noperm_settings');
             }
 
             // Server Settings
@@ -114,15 +114,15 @@ if (session_status() == PHP_SESSION_ACTIVE) {
               if ($perm[7] && $perm[8] === true) {
                 $page = 1;
               } else {
-                header('Location: ' . $host );
-                echo msg(noperm_server);
+                header('Location: /');
+                echo msg('noperm_server');
                 exit;
               }
             } else {
               $logmsg .= " SERVER SETTINGS, ACCESS DENIED: INVALID/EXPIRED TOKEN";
               @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg3 . PHP_EOL, FILE_APPEND) or logerror();
-              header('Location: ' . $host );
-              echo msg(badtoken);
+              header('Location: /');
+              echo msg('badtoken');
               exit;
             }
 
@@ -135,8 +135,8 @@ if (session_status() == PHP_SESSION_ACTIVE) {
                 } else {
                   $logmsg .= " USER MANAGER, NEW USER, ACCESS DENIED: INVALID/EXPIRED TOKEN";
                   @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg3 . PHP_EOL, FILE_APPEND) or logerror();
-                  header('Location: ' . $host );
-                  echo msg(badtoken);
+                  header('Location: /');
+                  echo msg('badtoken');
                   exit;
                 }
               }
@@ -178,17 +178,16 @@ if (session_status() == PHP_SESSION_ACTIVE) {
 
             } else {
               header('Location: ' . $host );
-              echo msg(noperm_users);
+              echo msg('noperm_users');
             }
           }
+          $ctoken = $ctoken = newtoken(session_id(), 'SETTINGS', $secret);
           require "plopbox/templates/settings.php";
         }
       } else {
         $logmsg .= " SETTINGS, ACCESS DENIED: INVALID/EXPIRED CORE TOKEN (Suspicious!)";
         @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg3 . PHP_EOL, FILE_APPEND) or logerror();
-        $_SESSION['stoken'] = false;
-        $_SESSION['uid'] = false;
-        $_SESSION['user'] = false;
+        logout($db, $logpath, $logmsg);
         header("HTTP/4.01 403 Forbidden");
         exit;
       }
