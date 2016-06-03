@@ -1,5 +1,5 @@
 PlopBox File Manager/Browser
-Plopbox-Core Installation Guide v1.2
+Plopbox-Core Installation Guide v0.5
 
 
 ------------------------------------------
