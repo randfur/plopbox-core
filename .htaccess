@@ -7,9 +7,11 @@ RewriteBase /
 RewriteCond %{REQUEST_URI} !^.*favicon.ico
 RewriteCond %{REQUEST_URI} !^.*/plopbox/
 RewriteCond %{REQUEST_URI} !^.*/plopbox/images/
-RewriteCond %{REQUEST_URI} !^.*/plopbox/jquery/
+RewriteCond %{REQUEST_URI} !^.*/plopbox/js/
+RewriteCond %{REQUEST_URI} !^.*/plopbox/php/
 RewriteCond %{REQUEST_URI} !^.*/plopbox/style.css
-RewriteRule .* index.php
-RewriteRule .*pbconf.ini index.php
+RewriteCond %{REQUEST_URI} !^.*pbindex.php
+RewriteRule .* index.html
+RewriteRule .*pbconf.ini index.html
 RewriteRule .*favicon.ico plopbox/images/controls/favicon.gif
 # END PLOPBOX

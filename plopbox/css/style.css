@@ -1,0 +1,855 @@
+/* PlopBox Filebrowser Stylesheet */
+
+/* Fonts */
+@import url('//fonts.googleapis.com/css?family=Oswald');
+@import url('//fonts.googleapis.com/css?family=Poiret+One');
+@import url('//fonts.googleapis.com/css?family=Inconsolata:700');
+
+/* Header Elements */
+.sunsetheader {
+  position:fixed;
+  z-index:5;
+  background: linear-gradient(0deg, #b0cce8, #c4cfd4);
+  width:100%;
+  height:50px;
+  border-bottom:2px solid #bfbfbf;
+  box-shadow:0px 3px 5px grey;
+}
+
+.sunriseheader {
+  position:fixed;
+  z-index:5;
+  background: linear-gradient(0deg, #d5c9b3, #5783a7);
+  width:100%;
+  height:50px;
+  border-bottom:2px solid #bfbfbf;
+  box-shadow:0px 3px 5px grey;
+  visibility:hidden;
+}
+
+.leftcolumn {
+  position:fixed;
+  z-index:6;
+  background-color:lightgrey;
+  width:230px;
+  height:100%;
+  border-right:2px solid #bfbfbf;
+  box-shadow:0px 3px 5px grey;
+  visibility:hidden;
+}
+
+.logo {
+  position:fixed;
+  display:inline;
+  top:11px;
+  margin-left:10px;
+  font-family:'Poiret One';
+  font-size:45px;
+  text-shadow: 1px 2px 3px grey;
+}
+
+.controlsrow {
+position:relative;
+float:right;
+padding:8px;
+width:auto;
+font-size:38px;
+}
+
+.controlsrowitem {
+  text-shadow: 0px 0px 1px black;
+  cursor:pointer;
+}
+
+.controlsrowitem:hover {
+  background-color: white;
+  color: transparent;
+  text-decoration: underline;
+  text-shadow: 0px 0px 2px white;
+  -webkit-background-clip: text;
+     -moz-background-clip: text;
+          background-clip: text;
+}
+
+.path {
+  position:fixed;
+  z-index:4;
+  min-width:500px;
+  font-family:"Inconsolata";
+  height:23px;
+  width:100%;
+  text-overflow:ellipsis;
+  overflow:hidden;
+  background-color:#edf1f5;
+  border-bottom:1px solid lightgrey;
+  margin-top:50px;
+  padding-left:10px;
+  padding-top:4px;
+}
+
+.columns {
+  position:absolute;
+  display:block;
+  z-index:1;
+  font-family:"Inconsolata";
+  margin-top:73px;
+  min-width:500px;
+  border-bottom:2px solid #d9d9d9;
+  width:100%;
+  height:28px;
+  background-color:white;
+}
+
+.cname {
+  display:inline;
+  position:relative;
+  float:left;
+  top:5px;
+  left:65px;
+}
+
+.ctime {
+  display:inline;
+  position:relative;
+  float:right;
+  top:5px;
+  right:18.5%;
+  width:auto;
+}
+
+.csize {
+  display:inline;
+  position:relative;
+  float:right;
+  clear:right;
+  top:5px;
+  right:20px;
+  margin-top:-16px;
+  width:auto;
+}
+
+/* Dialog Boxes */
+
+.dialogbox {
+    top: 0; left: 0; bottom: 0; right: 0;
+	position:fixed;
+	margin:auto;
+	width:300px;
+	height:150px;
+	background-color: lightgray;
+  box-shadow:0px 1px 9px black;
+  border-radius:10px;
+  border:1px solid #666666;
+  border:1px solid black;
+	z-index:12;
+}
+
+.titlebar {
+  position:absolute;
+  display:inline;
+  left:0;
+  top:0;
+  padding-top:2px;
+  width:298px;
+  height:22px;
+  background-image:url("/plopbox/images/controls/headerbgplain.png");
+  background-position:center;
+  border-bottom:1px solid darkgrey;
+  font-family:"Inconsolata";
+  font-size:.95em;
+}
+
+.fileclose {
+position: absolute;
+  right:1px;
+  top:1px;
+	width:20px;
+}
+
+.msg, .failmsg {
+  position:fixed;
+  display:inline-block;
+  text-align:center;
+  font-family:"Inconsolata";
+  color:#e6e6e6;
+  margin-top:-13px;
+  box-shadow:0px 3px 13px rgba(0, 0, 0, 0.4);
+  border-radius:10px;
+  border-bottom: 2px solid #004d1a;
+  background:#1b7e3c;
+  padding:17px;
+  width:100%;
+  min-height:40px;
+  height:auto;
+  z-index:11;
+}
+
+.failmsg {
+  border-bottom: 2px solid darkred;
+  background:#a82424;
+}
+
+.msgclose{
+position: absolute;
+  right:0;
+  margin-right:3px;
+	width:20px;
+}
+
+.boxwrapper {
+position: relative;
+top: 50%;
+    left: 50%;
+    margin-right: -50%;
+	transform: translate(-50%, -50%);
+	z-index:6;
+}
+
+.dimthelights {
+z-index:11;
+position:fixed;
+width:100%;
+height:100%;
+opacity:0.8;
+visibility:hidden;
+background-color:black;
+}
+
+/* File Index Elements */
+
+.wrapper {
+  top:0;
+  position:absolute;
+  display:block;
+	padding-top:101px;
+	width:100%;
+  height:auto;
+  min-height:99.9%;
+  min-width:500px;
+  overflow:visible;
+  background-color:#f2f2f2;
+}
+
+.entry {
+  position:relative;
+  display:inline-block;
+  width:100%;
+  min-width:500px;
+  height:43px;
+  padding:5px;
+  padding-left:10px;
+  padding-right:10px;
+  background-color:#f2f2f2;
+  border-bottom:1px solid #e6e6e6;
+  -webkit-transition:background 300ms ease;
+     -moz-transition:background 300ms ease;
+      -ms-transition:background 300ms ease;
+       -o-transition:background 300ms ease;
+          transition:background 300ms ease;
+}
+
+.entry:hover {
+  background-color:#d9d9d9;
+}
+
+.entrylink {
+  position:absolute;
+  display:inline-block;
+  width:100%;
+  left:0;
+  height:100%;
+  bottom:0px;
+  z-index:2;
+}
+
+.dirempty {
+  position:relative;
+  text-align:center;
+  display:block;
+  width:100%;
+  height:auto;
+  margin-top:40px;
+  font-size:45pt;
+}
+
+.selectors {
+  display:block;
+  position:absolute;
+  visibility:hidden;
+  float:left;
+  width:auto;
+  margin-top:10px;
+}
+
+.icon {
+  display:block;
+  position:absolute;
+  width:32px;
+  height:32px;
+  margin-left:15px;
+}
+
+.name {
+  display:inline;
+  position:relative;
+  font-family:Inconsolata;
+  float:left;
+  width:auto;
+  max-width:40%;
+  height:20px;
+  text-overflow:ellipsis;
+  overflow:hidden;
+  white-space:nowrap;
+  left:53px;
+  margin-top:8px;
+}
+
+.mtime {
+  display:inline;
+  position:relative;
+  font-family:Inconsolata;
+  font-weight:500;
+  float:right;
+  right:18%;
+  margin-top:8px;
+  width:auto;
+}
+
+.size {
+  display:inline;
+  position:relative;
+  font-family:Inconsolata;
+  float:right;
+  clear:right;
+  right:5px;
+  margin-top:-16px;
+  width:auto;
+}
+
+.sizefactor {
+  display:inline;
+  font-size:.75em;
+}
+
+.footerspacer {
+  position:static;
+  display:inline-block;
+  width:100%;
+  height:28px;
+  min-width:500px;
+  overflow:visible;
+  z-index:2
+}
+
+.footer {
+  display:block;
+  position:absolute;
+  border-top: 2px solid #e6e6e6;
+  width:100%;
+  height:auto;
+  min-width:500px;
+  padding-top:5px;
+  padding-bottom:5px;
+  bottom:0;
+  text-align:center;
+  font-size:1em;
+}
+
+.paginatorbutton {
+  display:inline-block;
+  position:relative;
+  text-align:center;
+  height:30px;
+  width:130px;
+  margin-bottom:8px;
+  background-color:#f2f2f2;
+  border-radius:10px;
+  border:1px solid #666666;
+  z-index:4
+}
+
+.paginatortext {
+  display:block;
+  padding-top:1px;
+  height:30px;
+  width:auto;
+  z-index:5;
+}
+
+/* Login Page */
+
+.loginlogo {
+  position:relative;
+  display:inline-block;
+  margin:auto;
+  color:#4d4d4d;
+  font-family:'Poiret One';
+  font-size:80px;
+  text-shadow: 1px 2px 3px black;
+  top: -65px; left: 0; bottom: 0; right: 0;
+  z-index:11;
+}
+
+.clouds {
+    background-repeat: repeat;
+    background-image: url("/plopbox/images/controls/clouds.png");
+    background-position:center;
+  height:100%;
+  width:100%;
+  display:inline;
+  position:absolute;
+  overflow:hidden;
+  opacity:0.07;
+  min-height:335px;
+  min-width:300px;
+}
+
+.loginpage {
+  width:100%;
+  height:100%;
+  min-height:335px;
+  min-width:300px;
+  overflow:hidden;
+  display:inline;
+  position:absolute;
+  background-image: url("/plopbox/images/controls/over_pattern.png");
+  background-size:8px;
+  background-repeat:repeat;
+
+}
+
+.loginbox {
+  top: 80px; left: 0; bottom: 0; right: 0;
+position:fixed;
+margin:auto;
+width:300px;
+height:240px;
+background-image:url("/plopbox/images/controls/boxtexture.gif");
+box-shadow:0px 6px 13px rgba(0, 0, 0, 0.4);
+border-radius:10px;
+border:1px solid #666666;
+z-index:11;
+}
+
+.loginboxwrapper {
+  position: relative;
+  top: 50%;
+      left: 50%;
+      margin-right: -50%;
+  	transform: translate(-50%, -50%);
+  	z-index:11;
+}
+
+.loginpagebackground {
+  position:absolute;
+  display:inline;
+  background: linear-gradient(0deg, #ae929f, #d5c9b3, #5783a7);
+background-size: 600% 600%;
+opacity:0.9;
+-webkit-animation: loginpage 180s ease infinite;
+-moz-animation: loginpage 180s ease infinite;
+animation: loginpage 180s ease infinite;
+	width:100%;
+  height:100%;
+  min-height:335px;
+  min-width:300px;
+  overflow:hidden;
+}
+
+@-webkit-keyframes loginpage {
+    0%{background-position:88% 0%}
+    50%{background-position:13% 100%}
+    100%{background-position:88% 0%}
+}
+@-moz-keyframes loginpage {
+    0%{background-position:88% 0%}
+    50%{background-position:13% 100%}
+    100%{background-position:88% 0%}
+}
+@keyframes loginpage {
+    0%{background-position:88% 0%}
+    50%{background-position:13% 100%}
+    100%{background-position:88% 0%}
+}
+
+.loginform{
+    max-width:300px;
+    margin:50px auto;
+    margin-top:-32px;
+    border-radius:2px;
+    padding:20px;
+    font-family: Arial, Helvetica, sans-serif;
+    overflow:visible;
+}
+
+.loginform ul{
+    list-style:none;
+    padding:0;
+    margin:0;
+}
+.loginform li{
+    display: block;
+    padding: 9px;
+    border:1px solid #808080;
+    margin-bottom: 30px;
+    border-radius: 3px;
+}
+.loginform li:last-child{
+    border:none;
+    margin-bottom: 0px;
+    text-align: center;
+}
+.loginform li > label{
+    display: block;
+    float: left;
+    margin-top: -19px;
+    background-image:url("/plopbox/images/controls/boxtexture.gif");
+    height: 14px;
+    padding: 2px 5px 2px 5px;
+    color: #808080;
+    font-size: 14px;
+    overflow: visible;
+    font-family: Arial, Helvetica, sans-serif;
+}
+.loginform input[type="text"],
+.loginform input[type="date"],
+.loginform input[type="datetime"],
+.loginform input[type="email"],
+.loginform input[type="number"],
+.loginform input[type="search"],
+.loginform input[type="time"],
+.loginform input[type="url"],
+.loginform input[type="password"],
+.loginform textarea,
+.loginform select
+{
+    box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    width: 100%;
+    text-align:center;
+    display: inline;
+    outline: none;
+    border: none;
+    height: 30px;
+    background-color: transparent;
+    line-height: 28px;
+    font-size: 25px;
+    padding: 0px;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.loginform input[type="text"]:focus,
+.loginform input[type="date"]:focus,
+.loginform input[type="datetime"]:focus,
+.loginform input[type="email"]:focus,
+.loginform input[type="number"]:focus,
+.loginform input[type="search"]:focus,
+.loginform input[type="time"]:focus,
+.loginform input[type="url"]:focus,
+.loginform input[type="password"]:focus,
+.loginform textarea:focus,
+.loginform select:focus {
+}
+
+.loginform li > span{
+    background: #808080;
+    display: block;
+    padding: 0.2px;
+    margin: 0 -9px -9px -9px;
+    text-align: center;
+    color: #EAEAEA;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+}
+.loginform textarea{
+    resize:none;
+}
+.loginform input[type="submit"],
+.loginform input[type="button"]{
+    background-image:url("/plopbox/images/controls/headerbgplain.png");
+    background-position:bottom;
+    border: none;
+    border-left:1px solid lightgrey;
+    border-right:1px solid lightgrey;
+    padding: 10px 100px 10px 100px;
+    border-bottom: 3px solid #808080;
+    border-radius: 5px;
+    color: #808080;
+    font-weight:900;
+}
+.loginform input[type="submit"]:hover,
+.loginform input[type="button"]:hover{
+    background-image:url("/plopbox/images/controls/headerbg.png");
+    color:#4d4d4d;
+    cursor:pointer;
+    border-bottom: 3px solid #5994FF;
+    border-left:1px solid #b3cdff;
+    border-right:1px solid #b3cdff;
+}
+
+/* Settings Page Elements */
+
+.swrapper {
+  top:0;
+  position:absolute;
+  display:block;
+	padding-top:90px;
+	width:100%;
+  height:100%;
+  min-height:500px;
+  min-width:500px;
+  overflow:visible;
+  background-color:#f2f2f2;
+}
+
+.scolumn {
+  position:absolute;
+  display:fixed;
+  padding-left:10px;
+  min-width:430px;
+  font-size:28px;
+  line-height:80px;
+  width:90%;
+  height:80%;
+  min-height:500px;
+  background-color:white;
+  left: 50%;
+  margin-right: -50%;
+transform: translate(-50%);
+overflow:auto;
+}
+
+.scontrolwrapper {
+  min-width:430px;
+  width:calc(100% + 10px);
+  height:50px;
+  margin-left:-10px;
+  background-image:url("/plopbox/images/controls/headerbgplain.png");
+  background-position:bottom;
+  border: 2px solid lightgrey;
+  border-bottom:2px solid #d9d9d9;
+}
+
+.scontrol {
+  line-height:normal;
+  display:block;
+  position:absolute;
+  padding-top:5px;
+  width:auto;
+  height:auto;
+  top:0;
+}
+
+.umcolumns {
+  min-width:430px;
+  position:absolute;
+  display:inline-block;
+  z-index:1;
+  margin-left:-10px;
+  font-size:15px;
+  font-family:"Inconsolata";
+  border-bottom:2px solid #d9d9d9;
+  width:100%;
+  height:28px;
+  background-color:white;
+}
+
+.scname {
+  display:block;
+  position:absolute;
+  padding-left:5px;
+  height:15px;
+  width:33%;
+  top:-20px;
+}
+
+.scperms {
+  display:block;
+  position:absolute;
+  text-align:center;
+  height:15px;
+  right:33%;
+  width:33%;
+  top:-20px;
+}
+
+.sctime {
+  display:block;
+  position:absolute;
+  text-align:right;
+  right:0;
+  padding-right:5px;
+  height:15px;
+  width:33%;
+  top:-20px;
+}
+
+.buttonbar {
+  display:inline;
+  position:fixed;
+  z-index:4;
+  min-width:500px;
+  font-family:"Inconsolata";
+  height:40px;
+  width:100%;
+  overflow:hidden;
+  background-color:#edf1f5;
+  border-bottom:1px solid lightgrey;
+  padding-left:10px;
+  padding-top:3px;
+  margin-top:50px;
+  text-align:center;
+}
+
+.spagebutton {
+  display:inline-block;
+  position:relative;
+  text-align:center;
+  cursor:pointer;
+  height:50px;
+  width:140px;
+  margin-bottom:8px;
+  background-color:#f2f2f2;
+  border-radius:10px;
+  border:1px solid #666666;
+  z-index:4
+}
+
+.spagebuttontext {
+  display:block;
+  font-size:19px;
+  cursor:pointer;
+  padding-top:1px;
+  height:30px;
+  width:auto;
+  z-index:5;
+}
+
+.sentry {
+  position:relative;
+  display:inline-block;
+  margin-left:-10px;
+  width:calc(100% + 10px);
+  min-width:430px;
+  height:43px;
+  padding:5px;
+  padding-left:10px;
+  padding-right:10px;
+  background-color:#f2f2f2;
+  border-bottom:1px solid #e6e6e6;
+  -webkit-transition:background 300ms ease;
+     -moz-transition:background 300ms ease;
+      -ms-transition:background 300ms ease;
+       -o-transition:background 300ms ease;
+          transition:background 300ms ease;
+}
+
+.sentrywrapper {
+  width:calc(100% + 10px);
+  margin-left:-10px;
+  height:auto;
+  padding-top:28px;
+}
+
+.username {
+  line-height:normal;
+  display:block;
+  position:absolute;
+  width:33%;
+  top:-2px;
+}
+
+.permflags {
+  line-height:normal;
+  display:block;
+  position:absolute;
+  text-align:center;
+  white-space:nowrap;
+  right:33%;
+  width:33%;
+  top:0.5px;
+}
+
+.ltime {
+  line-height:normal;
+  display:block;
+  position:absolute;
+  text-align:right;
+  right:0;
+  padding-right:5px;
+  width:33%;
+  top:-2px;
+}
+
+/* Misc */
+
+.errcontainer {
+  top: -20px; left: 0; bottom: 0; right: 0;
+position:fixed;
+margin:auto;
+width:220px;
+height:200px;
+text-align:center;
+z-index:11;
+}
+
+.errcode {
+  font-family:'Poiret One';
+  font-size:115px;
+  color:white;
+  display:inline-block;
+  line-height:normal;
+  height:auto;
+  width:auto;
+  text-shadow: 1px 1px 1px black;
+}
+
+.errdesc {
+  font-family:'Poiret One';
+  font-size:28px;
+  font-weight:bold;
+  color:white;
+  line-height:normal;
+  width:auto;
+  height:auto;
+  display:block;
+  text-shadow: 1px 1px 1px black;
+}
+
+* {
+	margin:0;
+	padding:0;
+	-webkit-box-sizing:border-box;
+	   -moz-box-sizing:border-box;
+	       box-sizing: border-box;
+}
+
+@-ms-viewport{
+  width:500px;
+}
+
+html {
+	min-height:100%;
+	color:#61666c;
+	font-weight:400;
+	font-size:1em;
+	font-family:'Oswald';
+	line-height:1em;
+}
+body {
+  position:absolute;
+  display:flex;
+  min-height:100%;
+  width:100%;
+}
+code {
+	font-family:consolas,monospace;
+}
+a {
+	color:#61666c;
+	text-decoration:none;
+}
+a:hover {
+	color:black;
+}

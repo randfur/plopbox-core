@@ -32,8 +32,10 @@ if (session_status() == PHP_SESSION_ACTIVE) {
           echo '<head><title>PlopBox Index - Settings</title>
           <link rel="shortcut icon" href="/plopbox/images/controls/favicon.gif" type="image/x-icon">
           <meta name="viewport" content="width=500, minimum-scale=0.5, maximum-scale=1.0, user-scalable=yes">
-          <link rel="stylesheet" type="text/css" href="' . $host . '/plopbox/style.css"></head>';
-          echo '<script type="text/javascript">
+          <link rel="stylesheet" type="text/css" href="' . $host . '/plopbox/css/style.css">
+          <link href="plopbox/css/materialdesignicons.min.css" media="all" rel="stylesheet" type="text/css" />
+          <script type="text/javascript" src="/plopbox/js/jquery/jquery-1.12.1.min.js"></script>
+          <script type="text/javascript">
           function msgclose() {
             document.getElementById("msg").style.visibility = "hidden";
           }
@@ -47,7 +49,8 @@ if (session_status() == PHP_SESSION_ACTIVE) {
             document.getElementById("adminum").submit();
           }
           </script>
-          <div class="header">
+          </head>';
+          echo '<div class="sunsetheader">
           <div class="logo">plopbox</div>
           <div class="controlsrow">
           <a href="' . $host . '"><img alt="View File Index" title="View File Index" src="/plopbox/images/controls/view-list-details.png"></a>

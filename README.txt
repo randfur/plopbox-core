@@ -23,5 +23,7 @@ Installation Instructions:
  3. Verify your web server allows the 2 included .htaccess files to function.
  (PlopBox will not function otherwise.)
 
- 4. Edit "/plopbox/pbconf.ini" and configure the variables accordingly, following the instructions in the file.
+ 4. Edit "/plopbox/default-pbconf.ini" and configure the variables accordingly, following the instructions in the file.
 (Configuration of this file is required. PlopBox will not function otherwise.)
+
+ 5. Rename "default-pbconf.ini" to "pbconf.ini".

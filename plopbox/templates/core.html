@@ -1,0 +1,86 @@
+<!-- PlopBox File Index -->
+
+<!-- File Entry Template -->
+<script type="text/html" id="entriestemplate">
+  <div data-title="entrytitle" class="entry" data-id="entryid"><img class="icon" data-alt="entryalt" data-src="entryicon"><div class="name" data-content-text="entryname"></div><div class="mtime" data-content-text="entrymtime"></div><div class="size" data-content-text="entrysize"></div><div class="sizefactor" data-content-text="entrysizefactor"></div></div>
+</script>
+
+<!-- Dialog Boxes -->
+<!-- Dialog Background Dimmer -->
+<div id="dimthelights" class="dimthelights" style="visibility:hidden;"></div>
+
+<!-- Upload -->
+<div align="Center" id="uploadbox" style="visibility:hidden;" class="dialogbox">
+  <div class="titlebar">Upload File<img alt="close" class="fileclose" onclick="uploadclose()" src="/plopbox/images/controls/close.png"></div>
+  <div class="boxwrapper">
+    <form id="fileupload">
+      Select file to upload:<br>
+      <input type="file" name="fileToUpload" id="fileToUpload"><br>
+      <input type="submit" value="Upload" name="submitfile">
+    </form>
+  </div>
+</div>
+
+<!-- New Folder -->
+<div align="Center" id="newfolderbox" style="visibility:hidden;" class="dialogbox">
+  <div class="titlebar">New Folder<img alt="close" class="fileclose" onclick="newfolderclose()" src="/plopbox/images/controls/close.png"></div>
+  <div class="boxwrapper">
+    <form id="newfolder">
+      Name of new folder:<br>
+      <input type="text" name="foldername" id="foldername"><br>
+      <input type="submit" value="Make Folder" name="submitfolder">
+    </form>
+  </div>
+</div>
+
+<!-- Delete -->
+<div align="Center" id="trashbox" style="visibility:hidden;" class="dialogbox">
+  <div class="titlebar">Move Files to Trash<img alt="close" class="fileclose" onclick="trashboxclose()" src="/plopbox/images/controls/close.png"></div>
+  <div class="boxwrapper">
+    <form id="delete">
+      Really delete X files?<br>
+      <input type="submit" value="Move to Trash" name="trashfiles">
+    </form>
+  </div>
+</div>
+
+<!-- Header -->
+<div class="sunsetheader">
+  <div class="logo">plopbox</div>
+  <!-- Control Row -->
+  <div class="controlsrow">
+    <i id="updir" title="Go Up a Directory" class="controlsrowitem mdi mdi-arrow-up-bold"></i>
+    <i  id="selectfiles" title="Select Files/Folders" onclick="selectionmodeon()" class="controlsrowitem mdi mdi-checkbox-marked"></i>
+    <i id="newdir"  title="Create a New Folder" onclick="newfolderopen()" class="controlsrowitem mdi mdi-folder-plus"></i>
+    <i id="newfile" title="Upload a File" onclick="uploadopen()" class="controlsrowitem mdi mdi-note-plus"></i>
+    <i id="del" title="Delete Files/Folders" class="controlsrowitem mdi mdi-delete-forever"></i>
+    <i title="Settings" class="controlsrowitem mdi mdi-settings"></i>
+    <i title="Log Out" class="controlsrowitem mdi mdi-power"></i>
+  </div>
+</div>
+
+<!-- Navigation Bar -->
+<div class="path">
+  <div id="prevbutton" style="visibility:hidden;" class="paginatorbutton"><div class="paginatortext"> ⇦ Prev. Page </div></div>
+  <div id="nextbutton" style="visibility:hidden;" class="paginatorbutton"><div class="paginatortext"> Next Page ⇨</div></div>
+  <div id="itemcount" data-content="itemcount"></div> Items - Browsing <div id="pointer" data-content="navbar"></div>
+</div>
+
+<!-- Columns -->
+<div class="columns">
+  <div class="cname"><i id="namearrow" style="visibility:hidden;" data-class="namesortarrow"></i>Name</a></div>
+  <div class="ctime"><i id="datearrow" style="visibility:hidden;" data-class="datesortarrow"></i>Last Modified</a></div>
+  <div class="csize"><i id="sizearrow" style="visibility:hidden;" data-class="sizesortarrow"></i>Size</div>
+</div><br>
+
+<!-- Start of File Index -->
+<div class="wrapper">
+  <div id="viewpermfailure" class="dirempty" style="visibility:hidden;">You are not allowed to view files.</div>
+  <div id="dirempty" class="dirempty" style="visibility:hidden;">Directory Empty</div>
+  <div id="entrycontainer"></div>
+
+  <!-- Footer -->
+  <div class="footerspacer">
+    <div class="footer" w3-include-html="plopbox/templates/footer.html"></div>
+  </div>
+</div>
