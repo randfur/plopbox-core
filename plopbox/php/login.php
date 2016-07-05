@@ -165,35 +165,35 @@ if (session_status() == PHP_SESSION_ACTIVE) {
                       } else {
                         $_SESSION['stoken'] = $_SESSION['uid'] = $_SESSION['user'] = false;
                         $token = newtoken(session_id(), 'LDATA', $secret);
-                        echo json_encode(array('opcode' => 'LoginPage', 'statcode' => 'Error', 'logintoken' => $token, 'failmsg' => 'Error: You are not allowed to log in.'));
+                        echo json_encode(array('opcode' => 'LoginPage', 'statcode' => 'Error', 'token' => $token, 'failmsg' => 'Error: You are not allowed to log in.'));
                         $token = null;
                         $logmsg .= ' LOGIN PAGE, AUTH FAILURE: User "' . $_POST['username'] . '" is not allowed to log in.';
                       }
                     } else {
                       $_SESSION['stoken'] = $_SESSION['uid'] = $_SESSION['user'] = false;
                       $token = newtoken(session_id(), 'LDATA', $secret);
-                      echo json_encode(array('opcode' => 'LoginPage', 'statcode' => 'Error', 'logintoken' => $token, 'failmsg' => 'FATAL DATABASE ERROR: Unable to log in.'));
+                      echo json_encode(array('opcode' => 'LoginPage', 'statcode' => 'Error', 'token' => $token, 'failmsg' => 'FATAL DATABASE ERROR: Unable to log in.'));
                       $token = null;
                       $logmsg .= ' LOGIN PAGE, FATAL DATABASE ERROR: UID for User "' . $_POST['username'] . '" has been tampered with! You must delete the user.';
                     }
                   } else {
                     $_SESSION['stoken'] = $_SESSION['uid'] = $_SESSION['user'] = false;
                     $token = newtoken(session_id(), 'LDATA', $secret);
-                    echo json_encode(array('opcode' => 'LoginPage', 'statcode' => 'Error', 'logintoken' => $token, 'failmsg' => 'Error: You have entered an incorrect username or password.'));
+                    echo json_encode(array('opcode' => 'LoginPage', 'statcode' => 'Error', 'token' => $token, 'failmsg' => 'Error: You have entered an incorrect username or password.'));
                     $token = null;
                     $logmsg .= ' LOGIN PAGE, AUTH FAILURE: Wrong password for user "' . $_POST['username'] . '".';
                   }
                 } else {
                   $_SESSION['stoken'] = $_SESSION['uid'] = $_SESSION['user'] = false;
                   $token = newtoken(session_id(), 'LDATA', $secret);
-                  echo json_encode(array('opcode' => 'LoginPage', 'statcode' => 'Error', 'logintoken' => $token, 'failmsg' => 'Error: You have entered an incorrect username or password.'));
+                  echo json_encode(array('opcode' => 'LoginPage', 'statcode' => 'Error', 'token' => $token, 'failmsg' => 'Error: You have entered an incorrect username or password.'));
                   $token = null;
                   $logmsg .= ' LOGIN PAGE, AUTH FAILURE: Username "' . $_POST['username'] . '" does not exist.';
                 }
               } else if (valtoken($db, session_id(), $_POST['token'], 'LDATA', $secret, $logpath, 300) == false) {
                 $_SESSION['stoken'] = $_SESSION['uid'] = $_SESSION['user'] = false;
                 $token = newtoken(session_id(), 'LDATA', $secret);
-                echo json_encode(array('opcode' => 'LoginPage', 'statcode' => 'Error', 'logintoken' => $token, 'failmsg' => 'Error: Invalid/Expired Token.'));
+                echo json_encode(array('opcode' => 'LoginPage', 'statcode' => 'Error', 'token' => $token, 'failmsg' => 'Error: Invalid/Expired Token.'));
                 $token = null;
                 $logmsg .= " LOGIN PAGE, AUTH FAILURE: INVALID/EXPIRED TOKEN";
               }
@@ -202,13 +202,13 @@ if (session_status() == PHP_SESSION_ACTIVE) {
               $logmsg .= " LOGIN PAGE, AUTH FAILURE: NO TOKEN (Suspicious!)";
               @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg3 . PHP_EOL, FILE_APPEND) or logerror(__LINE__);
               $token = newtoken(session_id(), 'LDATA', $secret);
-              echo json_encode(array('opcode' => 'LoginPage', 'statcode' => 'Error', 'logintoken' => $token, 'failmsg' => 'Error: Invalid/Expired Token.'));
+              echo json_encode(array('opcode' => 'LoginPage', 'statcode' => 'Error', 'token' => $token, 'failmsg' => 'Error: Invalid/Expired Token.'));
               $token = null;
               exit;
             }
           } else if ($_SESSION['stoken'] === false) {
             $token = newtoken(session_id(), 'LDATA', $secret);
-            echo json_encode(array('opcode' => 'LoginPage', 'statcode' => 'OK', 'logintoken' => $token));
+            echo json_encode(array('opcode' => 'LoginPage', 'statcode' => 'OK', 'token' => $token));
             $token = null;
             $logmsg .= " LOGIN PAGE, OK";
           }
@@ -220,14 +220,14 @@ if (session_status() == PHP_SESSION_ACTIVE) {
               if (valtoken($db, session_id(), $_POST['putoken'], 'PUDATA', $secret, $logpath, 300) == true) {
                 createpu($db, $_POST['puusername'], $_POST['pupassword'], $secret, $logpath);
                 $token = newtoken(session_id(), 'LDATA', $secret);
-                echo json_encode(array('opcode' => 'LoginPage', 'statcode' => 'OK', 'logintoken' => $token, 'msg' => 'Primary Administrator Account Created!'));
+                echo json_encode(array('opcode' => 'LoginPage', 'statcode' => 'OK', 'token' => $token, 'msg' => 'Primary Administrator Account Created!'));
                 $token = null;
                 $logmsg .= " LOGIN PAGE, OK: Primary User created!";
               } else if (valtoken($db, session_id(), $_POST['putoken'], 'PUDATA', $secret, $logpath, 300) == false) {
                 $_SESSION['stoken'] == false;
                 $logmsg .= " PRIMARY USER CREATION PAGE, AUTH FAILURE: INVALID/EXPIRED TOKEN";
                 $token = newtoken(session_id(), 'LDATA', $secret);
-                echo json_encode(array('opcode' => 'PUPage', 'statcode' => 'Error', 'logintoken' => $token, 'failmsg' => 'Error: Invalid/Expired Token.'));
+                echo json_encode(array('opcode' => 'PUPage', 'statcode' => 'Error', 'token' => $token, 'failmsg' => 'Error: Invalid/Expired Token.'));
                 $token = null;
               }
             } else {

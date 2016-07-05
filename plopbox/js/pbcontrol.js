@@ -1,13 +1,61 @@
 //  PlopBox Supervising Controller
 
+// Internal Pointer Object
+function pointerObject () {
+
+  this.args = [];
+  this.uri = "/pbindex.php";
+  // Add an Argument
+  this.args.add = function (values) {
+    for (key in values) {
+      for (i = this.args.length, len = values.length; i < len; i++) {
+        if (this.args.indexOf(values[i]) == -1) {
+          this.args.add(values[i]);
+        } else {
+          this.args[i] = values[i];
+        };
+      };
+    };
+  };
+
+  // Remove an Argument
+  this.args.remove = function (values) {
+    for (key in values) {
+      for (i = this.args.length, len = values.length; i < len; i++) {
+        if (key == this.args[i]) {
+          this.args.splice(i, 1);
+        };
+      };
+    };
+  };
+
+  // Reset Pointer to default data
+  this.reset = function () {
+    this.args = [];
+    this.uri = "/pbindex.php";
+  };
+
+  // Output the URI with or without Arguments
+  this.uri.output = function (argsBool = "") {
+    if (argsBool = true) {
+      return str(this.uri + serialize(this.uriArgs));
+    } else {
+      return this.uri;
+    };
+  };
+  // Update the URI
+  this.uri.update = function (value) {
+    this.uri = value;
+  };
+};
+
 // Assemble New Model Data
 function computeModel(pagedata) {
   // Tokens
   // TODO: Tokens
 
   // File Index
-  if (pagedata.opcode == 'FileIndex' && pagedata.statcode != '03' && pagedata.statcode != '04') {
-
+  if (pagedata.opcode === 'FileIndex' && pagedata.statcode != '03' && pagedata.statcode != '04') {
     // File Entry Object
     function itemEntryObject (fileData, itemcount, ID) {
       if (fileData['dir']) {
@@ -36,7 +84,7 @@ function computeModel(pagedata) {
       // Internal Functions
       // Open File
       this.open = function (uri) {
-        newData(uri, 'get');
+        getData(uri, 'get');
       };
       // Update Object
       this.update = function (modTime, entryTime) {
@@ -49,57 +97,16 @@ function computeModel(pagedata) {
     };
 
     // Generate File Entries
-    var fileEntry = [];
     for (i = 0; i < pagedata.itemcount; i++) {
       pagedata.fileEntries[i] = new itemEntryObject(pagedata.filedata[i], pagedata.itemcount, i);
     };
 
     // Navbar
-    pagedata.navlinks = "";
     var uriarray = pointer.split("/");
-    var navcount = 1;
-    var lastnav;
-    var navitems = [];
-    for (var i = 0, len = pointer.length; i < len; i++) {
-      navitems[i] = '<a href="' + '/' + lastnav + uriarray[i] + '">' + uriarray[i] + '</a>';
-      lastnav = uriarray[i] + '/';
-    };
-    for (var i = 0, len = navitems.length; i < len; i++) {
-      pagedata.navlinks += navitems[i];
-    };
-
-    // Page Navigation Buttons
-    pagedata.nextButton = 'hidden';
-    pagedata.prevButton = 'hidden';
-    if (pagedata.itemcount > pagedata.flimit) {
-      if (pagedata.fstart > 0) {
-        pagedata.nextButton = 'visible';
-      }
-      if ((pagedata.itemcount + pagedata.flimit) > pagedata.fstart && (pagedata.fstart + pagedata.flimit) <= pagedata.itemcount) {
-        pagedata.prevButton = 'visible';
-      };
-    };
-
-    // Sort Scheme
-    switch (pagedata.sort) {
-      case 0:
-      pagedata.namesortarrow = 'mdi mdi-arrow-up-drop-circle';
-      break;
-      case 1:
-      pagedata.namesortarrow = 'mdi mdi-arrow-down-drop-circle';
-      break;
-      case 2:
-      pagedata.datesortarrow = 'mdi mdi-arrow-up-drop-circle';
-      break;
-      case 3:
-      pagedata.datesortarrow = 'mdi mdi-arrow-down-drop-circlee';
-      break;
-      case 4:
-      pagedata.sizesortarrow = 'mdi mdi-arrow-up-drop-circle';
-      break;
-      case 5:
-      pagedata.sizesortarrow = 'mdi mdi-arrow-down-drop-circle';
-      break;
+    var lastnav = "";
+    for (i = 0, len = pointer.length; i < len; i++) {
+      pagedata.navItems[i] = lastnav + "/" + uriarray[i];
+      lastnav =+ uriarray[i];
     };
 
     // Stage Model Data
@@ -116,21 +123,22 @@ function computeModel(pagedata) {
 
   } else if (pagedata.opcode == 'LoginPage' && pagedata.statcode != '03' && pagedata.statcode != '04') {
     var modelData = {
+      opcode: pagedata.opcode,
+      token: pagedata.token,
       msg: pagedata.msg,
       failmsg: pagedata.failmsg
     }
   };
-
-  pageView(pagedata, pointer);
+  console.log(pagedata.opcode);
+  pageView(modelData);
 };
 
-// FIXME: Fix me you lazy fuck
 // Read New Data
-function dataHandler (pointer, type, senddata = "") {
+function getData (data = "") {
   $.ajax({
     url: pointer,
-    type: type,
-    data: senddata,
+    type: "get",
+    data: data,
     dataType: "json",
     timeout: 30000,
     success: function (json)
@@ -138,23 +146,37 @@ function dataHandler (pointer, type, senddata = "") {
       if (json.error) {
         failmsg("Error communicating with the server! " + json.error);
       } else {
+        console.log(json);
         computeModel(json);
       };
     }
   });
+  return false;
+};
+
+// POST Data to Server
+function postData(data) {
+  $.ajax({
+    url: pointer,
+    type: "post",
+    data: data,
+    dataType: "json",
+    timeout: 30000,
+    success: function (json)
+    {
+      if (json.error) {
+        failmsg("Error communicating with the server! " + json.error);
+      } else {
+        console.log(json);
+        computeModel(json);
+      };
+    }
+  });
+  return false;
 };
 
 // Initial Page Load
 $(document).ready(function() {
-  pointer = '/pbindex.php'
-  dataHandler(pointer, 'get');
+  pointer = new pointerOBject ();
+  getData();
 });
-
-// Event Listeners
-
-// POST Data to Server
-function postData(e) {
-  if (e.preventDefault) e.preventDefault();
-  dataHandler(pointer, 'post', e);
-  return false;
-}

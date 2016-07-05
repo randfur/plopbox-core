@@ -179,7 +179,7 @@ if (session_status() == PHP_SESSION_ACTIVE) {
 
           // Check if user is allowed to view files
           if ($perm[0] && $perm[1] === false) {
-            echo json_encode(array('opcode' => 'FileIndex', 'statcode' => 'ViewPermFail'));
+            echo json_encode(array('opcode' => 'FileIndex', 'statcode' => 'ViewDeny'));
             $logmsg .= ' INDEX CORE, AUTH FAILURE: User "' . $_SESSION['user'] . '" is not allowed to view files.';
           } else if ($perm[0] && $perm[1] === true) {
 
@@ -249,7 +249,7 @@ if (session_status() == PHP_SESSION_ACTIVE) {
               foreach ($FileOutput as $entry) {
                 $output[] = $entry['item'];
               }
-              echo json_encode(array("opcode" => "FileIndex", "statcode" => "00", "sort" => $sortscheme, "itemcount" => $itemcount, "flimit" => $_SESSION['flimit'], "fstart" => $fstart, "filedata" => $output));
+              echo json_encode(array("opcode" => "FileIndex", "statcode" => "OK", "sort" => $sortscheme, "itemcount" => $itemcount, "flimit" => $_SESSION['flimit'], "fstart" => $fstart, "filedata" => $output));
               $logmsg .= ' INDEX CORE, OK: LISTING ' . $itemcount . ' ITEMS';
             }
           }
