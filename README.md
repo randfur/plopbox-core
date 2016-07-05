@@ -16,7 +16,7 @@
 
  1. Unzip the contents of "master.zip" into any folder within your document-root.
 
- 2. Verify the "php_pdo_sqlite", "php_sqlite3", and "php_filefinfo" extensions are loaded (uncommented) in your "php.ini" file.
+ 2. Verify the "php_pdo_mysql", "php_mysql", and "php_filefinfo" extensions are loaded (uncommented) in your "php.ini" file.
 
  3. Verify your web server allows the 2 included .htaccess files to function.
  (PlopBox will not function otherwise.)
