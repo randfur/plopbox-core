@@ -1,110 +1,171 @@
-//  PlopBox Supervising Controller
+/*   |
+,---.|---.
+|   ||   |
+|---'`---'
+|
+PlopBox
+Supervising Controller
+*/
 
-// Internal Pointer Object
-function pointerObject () {
+// Controller Object
+function controllerObject () {
+  var self = this;
 
-  this.args = [];
-  this.uri = "/pbindex.php";
-  // Add an Argument
-  this.args.add = function (values) {
-    for (key in values) {
-      for (i = this.args.length, len = values.length; i < len; i++) {
-        if (this.args.indexOf(values[i]) == -1) {
-          this.args.add(values[i]);
-        } else {
-          this.args[i] = values[i];
-        };
-      };
-    };
-  };
-
-  // Remove an Argument
-  this.args.remove = function (values) {
-    for (key in values) {
-      for (i = this.args.length, len = values.length; i < len; i++) {
-        if (key == this.args[i]) {
-          this.args.splice(i, 1);
-        };
-      };
-    };
-  };
-
-  // Reset Pointer to default data
-  this.reset = function () {
+  // URI Navigator Object
+  function navigatorObject () {
+    var self = this;
     this.args = [];
     this.uri = "/pbindex.php";
-  };
 
-  // Output the URI with or without Arguments
-  this.uri.output = function (argsBool = "") {
-    if (argsBool = true) {
-      return str(this.uri + serialize(this.uriArgs));
-    } else {
-      return this.uri;
+    // Add an Argument
+    this.addargs = function (values) {
+      for (key in values) {
+        for (i = self.args.length, len = values.length; i < len; i++) {
+          if (self.args.indexOf(values[i]) == -1) {
+            self.args.add(values[i]);
+          } else {
+            self.args[i] = values[i];
+          };
+        };
+      };
+    };
+
+    // Remove an Argument
+    this.removeargs = function (values) {
+      for (key in values) {
+        for (i = self.args.length, len = values.length; i < len; i++) {
+          if (key == self.args[i]) {
+            self.args.splice(i, 1);
+          };
+        };
+      };
+    };
+
+    // Reset Navigator to default data
+    this.reset = function () {
+      self.args = [];
+      self.uri = "/pbindex.php";
+    };
+
+    // Output the URI with or without Arguments
+    this.output = function (argsBool = false) {
+      if (argsBool = true) {
+        return $(this.uri + $(this.args).serialize()).tostring();
+      } else {
+        return this.uri;
+      };
+    };
+
+    // Decode and store a Session JWT
+    function jwtDecode (token) {
+      var dToken = jwt_decode(token);
+    };
+
+    // GET Data from the server
+    this.getData = function () {
+      console.log("GetData= " + navigator.uri);
+      $.ajax({
+        url: navigator.uri,
+        type: "get",
+        data: $(navigator.args).serialize(),
+        dataType: "json",
+        timeout: 30000,
+        success: function (json)
+        {
+          if (json.error) {
+            console.log("Error communicating with the server! " + json.error);
+          } else {
+            console.log(json);
+            computeModel(json, navigator);
+          };
+        }
+      });
+      return false;
+    };
+
+    // POST Data from the server
+    this.postData = function (data = "") {
+      console.log("PostData= " + navigator.uri);
+      $.ajax({
+        url: navigator.uri,
+        type: "post",
+        data: data,
+        dataType: "json",
+        timeout: 30000,
+        success: function (json)
+        {
+          if (json.error) {
+            console.log("Error communicating with the server! " + json.error);
+          } else {
+            console.log(json);
+            computeModel(json, navigator);
+          };
+        }
+      });
+      return false;
     };
   };
-  // Update the URI
-  this.uri.update = function (value) {
-    this.uri = value;
-  };
+
+  // Initialize Model
+  this.navigator = navigator = new navigatorObject();
+  console.log(this.navigator.uri);
+  this.getData();
+};
 };
 
 // Assemble New Model Data
-function computeModel(pagedata) {
+function computeModel(pagedata, navigator) {
+  console.log("ComputeModel= " + navigator.uri);
   // Tokens
   // TODO: Tokens
 
   // File Index
-  if (pagedata.opcode === 'FileIndex' && pagedata.statcode != '03' && pagedata.statcode != '04') {
-    // File Entry Object
-    function itemEntryObject (fileData, itemcount, ID) {
-      if (fileData['dir']) {
-        this.id = ID;
-        this.dir = filedata['dir'];
-        this.fileName = fileData['name'];
-        this.uri = pointer + fileData['path'];
-        this.icon = fileData['ficon'];
-        this.modTime = fileData['mtime'];
-        this.size = fileData['fsize'];
-        this.sizefactor = fileData['fsizefactor'];
-        this.modTimeUX = filedata['mtimeux'];
-        this.bornTimeUX = Math.floor(Date.now() / 1000);
-      } else {
-        this.id = ID;
-        this.dir = filedata['dir'];
-        this.fileName = fileData['name'];
-        this.uri = pointer + fileData['path'];
-        this.icon = fileData['ficon'];
-        this.modTime = fileData['mtime'];
-        this.size = fileData['fsize'];
-        this.sizefactor = fileData['fsizefactor'];
-        this.modTimeUX = filedata['mtimeux'];
-        this.bornTimeUX = Math.floor(Date.now() / 1000);
-      };
-      // Internal Functions
-      // Open File
-      this.open = function (uri) {
-        getData(uri, 'get');
-      };
-      // Update Object
-      this.update = function (modTime, entryTime) {
-        if (modTime > entryTime) {
+  if (pagedata.opcode === 'FileIndex') {
+    if (pagedata.statcode == 'ViewDeny' || pagedata.statcode == 'Empty') {
 
+    } else {
+      // File Entry Object
+      function itemEntryObject (fileData, itemcount, ID, navigator) {
+        if (fileData['dir']) {
+          this.id = ID;
+          this.dir = filedata['dir'];
+          this.fileName = fileData['name'];
+          this.uri = navigator.uri + fileData['path'];
+          this.icon = fileData['ficon'];
+          this.modTime = fileData['mtime'];
+          this.size = fileData['fsize'];
+          this.sizefactor = fileData['fsizefactor'];
+          this.modTimeUX = filedata['mtimeux'];
+        } else {
+          this.id = ID;
+          this.dir = filedata['dir'];
+          this.fileName = fileData['name'];
+          this.uri = navigator.uri + fileData['path'];
+          this.icon = fileData['ficon'];
+          this.modTime = fileData['mtime'];
+          this.size = fileData['fsize'];
+          this.sizefactor = fileData['fsizefactor'];
+          this.modTimeUX = filedata['mtimeux'];
         };
+        // Internal Functions
+        // Open File
+        this.open = function () {
+          getFile(self.uri);
+        };
+        // TODO: this.delete
+        // TODO: this.move
       };
-      // TODO: this.delete
-      // TODO: this.move
-    };
 
-    // Generate File Entries
-    for (i = 0; i < pagedata.itemcount; i++) {
-      pagedata.fileEntries[i] = new itemEntryObject(pagedata.filedata[i], pagedata.itemcount, i);
+      // Generate File Entries
+      for (i = 0; i < pagedata.itemcount; i++) {
+        pagedata.fileEntries[i] = new itemEntryObject(pagedata.filedata[i], pagedata.itemcount, i, navigator);
+      };
     };
 
     // Navbar
-    var uriarray = pointer.split("/");
+    var uriarray = navigator.uri.split("/");
     var lastnav = "";
-    for (i = 0, len = pointer.length; i < len; i++) {
+    for (i = 0, len = navigator.uri.length; i < len; i++) {
       pagedata.navItems[i] = lastnav + "/" + uriarray[i];
       lastnav =+ uriarray[i];
     };
@@ -114,69 +175,35 @@ function computeModel(pagedata) {
       opcode: pagedata.opcode,
       statcode: pagedata.statcode,
       msg: pagedata.msg,
-      failmsg: pagedata.failmsg,
       crow: pagedata.crow,
       filedata: pagedata.filedata,
       loc: pagedata.loc,
       sort: pagedata.sort
     };
 
-  } else if (pagedata.opcode == 'LoginPage' && pagedata.statcode != '03' && pagedata.statcode != '04') {
+  } else if (pagedata.opcode == 'LoginPage') {
     var modelData = {
       opcode: pagedata.opcode,
+      statcode: pagedata.statcode,
       token: pagedata.token,
       msg: pagedata.msg,
-      failmsg: pagedata.failmsg
     }
   };
   console.log(pagedata.opcode);
-  pageView(modelData);
+
+  // Send Model to View Presenter
+  pageView(modelData, navigator);
 };
 
-// Read New Data
-function getData (data = "") {
-  $.ajax({
-    url: pointer,
-    type: "get",
-    data: data,
-    dataType: "json",
-    timeout: 30000,
-    success: function (json)
-    {
-      if (json.error) {
-        failmsg("Error communicating with the server! " + json.error);
-      } else {
-        console.log(json);
-        computeModel(json);
-      };
-    }
-  });
-  return false;
-};
-
-// POST Data to Server
-function postData(data) {
-  $.ajax({
-    url: pointer,
-    type: "post",
-    data: data,
-    dataType: "json",
-    timeout: 30000,
-    success: function (json)
-    {
-      if (json.error) {
-        failmsg("Error communicating with the server! " + json.error);
-      } else {
-        console.log(json);
-        computeModel(json);
-      };
-    }
-  });
-  return false;
+// Download a File from the Server
+function getFile(uri) {
+  console.log("Getting File: " + uri);
 };
 
 // Initial Page Load
-$(document).ready(function() {
-  pointer = new pointerOBject ();
-  getData();
-});
+$(document).ready(
+  function() {
+    var controller = new controllerObject();
+  };
+}
+);

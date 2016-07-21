@@ -49,11 +49,11 @@
 }
 
 .controlsrow {
-position:relative;
-float:right;
-padding:8px;
-width:auto;
-font-size:38px;
+  position:relative;
+  float:right;
+  padding:8px;
+  width:auto;
+  font-size:38px;
 }
 
 .controlsrowitem {
@@ -67,8 +67,8 @@ font-size:38px;
   text-decoration: underline;
   text-shadow: 0px 0px 2px white;
   -webkit-background-clip: text;
-     -moz-background-clip: text;
-          background-clip: text;
+  -moz-background-clip: text;
+  background-clip: text;
 }
 
 .path {
@@ -131,17 +131,17 @@ font-size:38px;
 /* Dialog Boxes */
 
 .dialogbox {
-    top: 0; left: 0; bottom: 0; right: 0;
-	position:fixed;
-	margin:auto;
-	width:300px;
-	height:150px;
-	background-color: lightgray;
+  top: 0; left: 0; bottom: 0; right: 0;
+  position:fixed;
+  margin:auto;
+  width:300px;
+  height:150px;
+  background-color: lightgray;
   box-shadow:0px 1px 9px black;
   border-radius:10px;
   border:1px solid #666666;
   border:1px solid black;
-	z-index:12;
+  z-index:12;
 }
 
 .titlebar {
@@ -160,10 +160,10 @@ font-size:38px;
 }
 
 .fileclose {
-position: absolute;
+  position: absolute;
   right:1px;
   top:1px;
-	width:20px;
+  width:20px;
 }
 
 .msg, .failmsg {
@@ -172,12 +172,12 @@ position: absolute;
   text-align:center;
   font-family:"Inconsolata";
   color:#e6e6e6;
-  margin-top:-13px;
+  margin-top:-19px;
   box-shadow:0px 3px 13px rgba(0, 0, 0, 0.4);
   border-radius:10px;
   border-bottom: 2px solid #004d1a;
   background:#1b7e3c;
-  padding:17px;
+  padding-top:20px;
   width:100%;
   min-height:40px;
   height:auto;
@@ -190,29 +190,31 @@ position: absolute;
 }
 
 .msgclose{
-position: absolute;
+  cursor:pointer;
+  position: absolute;
   right:0;
   margin-right:3px;
-	width:20px;
+  width:20px;
+  z-index:12;
 }
 
 .boxwrapper {
-position: relative;
-top: 50%;
-    left: 50%;
-    margin-right: -50%;
-	transform: translate(-50%, -50%);
-	z-index:6;
+  position: relative;
+  top: 50%;
+  left: 50%;
+  margin-right: -50%;
+  transform: translate(-50%, -50%);
+  z-index:6;
 }
 
 .dimthelights {
-z-index:11;
-position:fixed;
-width:100%;
-height:100%;
-opacity:0.8;
-visibility:hidden;
-background-color:black;
+  z-index:11;
+  position:fixed;
+  width:100%;
+  height:100%;
+  opacity:0.8;
+  visibility:hidden;
+  background-color:black;
 }
 
 /* File Index Elements */
@@ -221,8 +223,8 @@ background-color:black;
   top:0;
   position:absolute;
   display:block;
-	padding-top:101px;
-	width:100%;
+  padding-top:101px;
+  width:100%;
   height:auto;
   min-height:99.9%;
   min-width:500px;
@@ -242,10 +244,10 @@ background-color:black;
   background-color:#f2f2f2;
   border-bottom:1px solid #e6e6e6;
   -webkit-transition:background 300ms ease;
-     -moz-transition:background 300ms ease;
-      -ms-transition:background 300ms ease;
-       -o-transition:background 300ms ease;
-          transition:background 300ms ease;
+  -moz-transition:background 300ms ease;
+  -ms-transition:background 300ms ease;
+  -o-transition:background 300ms ease;
+  transition:background 300ms ease;
 }
 
 .entry:hover {
@@ -391,9 +393,9 @@ background-color:black;
 }
 
 .clouds {
-    background-repeat: repeat;
-    background-image: url("/plopbox/images/controls/clouds.png");
-    background-position:center;
+  background-repeat: repeat;
+  background-image: url("/plopbox/images/controls/clouds.png");
+  background-position:center;
   height:100%;
   width:100%;
   display:inline;
@@ -420,36 +422,36 @@ background-color:black;
 
 .loginbox {
   top: 80px; left: 0; bottom: 0; right: 0;
-position:fixed;
-margin:auto;
-width:300px;
-height:240px;
-background-image:url("/plopbox/images/controls/boxtexture.gif");
-box-shadow:0px 6px 13px rgba(0, 0, 0, 0.4);
-border-radius:10px;
-border:1px solid #666666;
-z-index:11;
+  position:fixed;
+  margin:auto;
+  width:300px;
+  height:240px;
+  background-image:url("/plopbox/images/controls/boxtexture.gif");
+  box-shadow:0px 6px 13px rgba(0, 0, 0, 0.4);
+  border-radius:10px;
+  border:1px solid #666666;
+  z-index:11;
 }
 
 .loginboxwrapper {
-  position: relative;
-  top: 50%;
-      left: 50%;
-      margin-right: -50%;
-  	transform: translate(-50%, -50%);
-  	z-index:11;
+  top: 0px; left: 0; bottom: 0; right: 0;
+  position: absolute;
+  display:block;
+  height:100%;
+  width:100%;
+  z-index:11;
 }
 
 .loginpagebackground {
   position:absolute;
   display:inline;
   background: linear-gradient(0deg, #ae929f, #d5c9b3, #5783a7);
-background-size: 600% 600%;
-opacity:0.9;
--webkit-animation: loginpage 180s ease infinite;
--moz-animation: loginpage 180s ease infinite;
-animation: loginpage 180s ease infinite;
-	width:100%;
+  background-size: 600% 600%;
+  opacity:0.9;
+  -webkit-animation: loginpage 180s ease infinite;
+  -moz-animation: loginpage 180s ease infinite;
+  animation: loginpage 180s ease infinite;
+  width:100%;
   height:100%;
   min-height:335px;
   min-width:300px;
@@ -457,59 +459,58 @@ animation: loginpage 180s ease infinite;
 }
 
 @-webkit-keyframes loginpage {
-    0%{background-position:88% 0%}
-    50%{background-position:13% 100%}
-    100%{background-position:88% 0%}
+  0%{background-position:88% 0%}
+  50%{background-position:13% 100%}
+  100%{background-position:88% 0%}
 }
 @-moz-keyframes loginpage {
-    0%{background-position:88% 0%}
-    50%{background-position:13% 100%}
-    100%{background-position:88% 0%}
+  0%{background-position:88% 0%}
+  50%{background-position:13% 100%}
+  100%{background-position:88% 0%}
 }
 @keyframes loginpage {
-    0%{background-position:88% 0%}
-    50%{background-position:13% 100%}
-    100%{background-position:88% 0%}
+  0%{background-position:88% 0%}
+  50%{background-position:13% 100%}
+  100%{background-position:88% 0%}
 }
 
 .loginform{
-    max-width:300px;
-    margin:50px auto;
-    margin-top:-32px;
-    border-radius:2px;
-    padding:20px;
-    font-family: Arial, Helvetica, sans-serif;
-    overflow:visible;
+  display:static;
+  position:block;
+  padding-top:20px;
+  padding-bottom:13px;
+  width:280px;
+  border-radius:2px;
+  font-family: Arial, Helvetica, sans-serif;
+  overflow:visible;
 }
 
 .loginform ul{
-    list-style:none;
-    padding:0;
-    margin:0;
+  list-style:none;
+  padding:0;
+  margin:0;
 }
 .loginform li{
-    display: block;
-    padding: 9px;
-    border:1px solid #808080;
-    margin-bottom: 30px;
-    border-radius: 3px;
+  display: block;
+  padding: 9px;
+  border:1px solid #808080;
+  margin-bottom: 25px;
+  border-radius: 3px;
 }
 .loginform li:last-child{
-    border:none;
-    margin-bottom: 0px;
-    text-align: center;
+  margin-bottom: 0px;
 }
 .loginform li > label{
-    display: block;
-    float: left;
-    margin-top: -19px;
-    background-image:url("/plopbox/images/controls/boxtexture.gif");
-    height: 14px;
-    padding: 2px 5px 2px 5px;
-    color: #808080;
-    font-size: 14px;
-    overflow: visible;
-    font-family: Arial, Helvetica, sans-serif;
+  display: block;
+  float: left;
+  margin-top: -19px;
+  background-image:url("/plopbox/images/controls/boxtexture.gif");
+  height: 14px;
+  padding: 2px 5px 2px 5px;
+  color: #808080;
+  font-size: 14px;
+  overflow: visible;
+  font-family: Arial, Helvetica, sans-serif;
 }
 .loginform input[type="text"],
 .loginform input[type="date"],
@@ -523,20 +524,20 @@ animation: loginpage 180s ease infinite;
 .loginform textarea,
 .loginform select
 {
-    box-sizing: border-box;
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    width: 100%;
-    text-align:center;
-    display: inline;
-    outline: none;
-    border: none;
-    height: 30px;
-    background-color: transparent;
-    line-height: 28px;
-    font-size: 25px;
-    padding: 0px;
-    font-family: Arial, Helvetica, sans-serif;
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  width: 100%;
+  text-align:center;
+  display: inline;
+  outline: none;
+  border: none;
+  height: 30px;
+  background-color: transparent;
+  line-height: 28px;
+  font-size: 25px;
+  padding: 0px;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 .loginform input[type="text"]:focus,
@@ -553,39 +554,57 @@ animation: loginpage 180s ease infinite;
 }
 
 .loginform li > span{
-    background: #808080;
-    display: block;
-    padding: 0.2px;
-    margin: 0 -9px -9px -9px;
-    text-align: center;
-    color: #EAEAEA;
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 11px;
+  background: #808080;
+  display: block;
+  padding: 0.2px;
+  margin: 0 -9px -9px -9px;
+  text-align: center;
+  color: #EAEAEA;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 11px;
 }
 .loginform textarea{
-    resize:none;
+  resize:none;
 }
-.loginform input[type="submit"],
-.loginform input[type="button"]{
-    background-image:url("/plopbox/images/controls/headerbgplain.png");
-    background-position:bottom;
-    border: none;
-    border-left:1px solid lightgrey;
-    border-right:1px solid lightgrey;
-    padding: 10px 100px 10px 100px;
-    border-bottom: 3px solid #808080;
-    border-radius: 5px;
-    color: #808080;
-    font-weight:900;
+
+.logintext {
+  display:block;
+  position:absolute;
+  height:100%;
+  width:100%;
+  padding-top:14px;
+  text-align:center;
+  z-index:1;
 }
-.loginform input[type="submit"]:hover,
-.loginform input[type="button"]:hover{
-    background-image:url("/plopbox/images/controls/headerbg.png");
-    color:#4d4d4d;
-    cursor:pointer;
-    border-bottom: 3px solid #5994FF;
-    border-left:1px solid #b3cdff;
-    border-right:1px solid #b3cdff;
+
+.loginbutton {
+  background-color:lightgrey;
+  margin-bottom:10px;
+  display:inline-block;
+  position:relative;
+  width: 200px;
+  height:50px;
+  border-top:1px solid lightgrey;
+  border-left:1px solid #bfbfbf;
+  border-right:1px solid #bfbfbf;
+  border-bottom: 6px ridge lightgrey;
+  border-radius: 8px;
+  color:#4d4d4d;
+  font-weight:900;
+  box-shadow: inset 0px -2px 20px 0px rgba(180,180,180,1);
+}
+
+.loginbutton:hover {
+  background-color:#ebf2f9;
+  cursor:pointer;
+}
+
+
+.loginbutton:active {
+  height:44px;
+  border-bottom: 2px outset lightgrey;
+  bottom: -6px;
+  cursor:pointer;
 }
 
 /* Settings Page Elements */
@@ -594,8 +613,8 @@ animation: loginpage 180s ease infinite;
   top:0;
   position:absolute;
   display:block;
-	padding-top:90px;
-	width:100%;
+  padding-top:90px;
+  width:100%;
   height:100%;
   min-height:500px;
   min-width:500px;
@@ -616,8 +635,8 @@ animation: loginpage 180s ease infinite;
   background-color:white;
   left: 50%;
   margin-right: -50%;
-transform: translate(-50%);
-overflow:auto;
+  transform: translate(-50%);
+  overflow:auto;
 }
 
 .scontrolwrapper {
@@ -739,10 +758,10 @@ overflow:auto;
   background-color:#f2f2f2;
   border-bottom:1px solid #e6e6e6;
   -webkit-transition:background 300ms ease;
-     -moz-transition:background 300ms ease;
-      -ms-transition:background 300ms ease;
-       -o-transition:background 300ms ease;
-          transition:background 300ms ease;
+  -moz-transition:background 300ms ease;
+  -ms-transition:background 300ms ease;
+  -o-transition:background 300ms ease;
+  transition:background 300ms ease;
 }
 
 .sentrywrapper {
@@ -786,12 +805,12 @@ overflow:auto;
 
 .errcontainer {
   top: -20px; left: 0; bottom: 0; right: 0;
-position:fixed;
-margin:auto;
-width:220px;
-height:200px;
-text-align:center;
-z-index:11;
+  position:fixed;
+  margin:auto;
+  width:220px;
+  height:200px;
+  text-align:center;
+  z-index:11;
 }
 
 .errcode {
@@ -818,11 +837,11 @@ z-index:11;
 }
 
 * {
-	margin:0;
-	padding:0;
-	-webkit-box-sizing:border-box;
-	   -moz-box-sizing:border-box;
-	       box-sizing: border-box;
+  margin:0;
+  padding:0;
+  -webkit-box-sizing:border-box;
+  -moz-box-sizing:border-box;
+  box-sizing: border-box;
 }
 
 @-ms-viewport{
@@ -830,12 +849,12 @@ z-index:11;
 }
 
 html {
-	min-height:100%;
-	color:#61666c;
-	font-weight:400;
-	font-size:1em;
-	font-family:'Oswald';
-	line-height:1em;
+  min-height:100%;
+  color:#61666c;
+  font-weight:400;
+  font-size:1em;
+  font-family:'Oswald';
+  line-height:1em;
 }
 body {
   position:absolute;
@@ -844,12 +863,12 @@ body {
   width:100%;
 }
 code {
-	font-family:consolas,monospace;
+  font-family:consolas,monospace;
 }
 a {
-	color:#61666c;
-	text-decoration:none;
+  color:#61666c;
+  text-decoration:none;
 }
 a:hover {
-	color:black;
+  color:black;
 }

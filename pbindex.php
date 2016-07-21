@@ -4,6 +4,7 @@
 // Initialize core variables
 $funcload = 1;
 require "plopbox/php/pbfunc.php";
+$privateFolder = "/private_htdocs";
 $interlink = urldecode(strstr( $_SERVER['REQUEST_URI'], "pbindex.php/?", true ) ?: $_SERVER['REQUEST_URI']);
 $interlink = urldecode(strstr( $_SERVER['REQUEST_URI'], "pbindex.php/", true ) ?: $_SERVER['REQUEST_URI']);
 $host = ('http://' . $_SERVER['SERVER_NAME']);
@@ -28,6 +29,8 @@ if (!file_exists("plopbox/pbconf.ini")) {
 // Scan variables from pbconf.ini
 $pbconf = parse_ini_file("plopbox/pbconf.ini", true, INI_SCANNER_NORMAL);
 $droot = $pbconf['required']['pbroot'];
+// Set Filesystem path
+$fspath = $droot . $privateFolder . $interlink;
 $logpath = $pbconf['required']['logpath'];
 $secret = $pbconf['required']['secret'];
 $dbauth = $pbconf['database'];
@@ -36,9 +39,10 @@ $timestring = $pbconf['index_options']['timestring'];
 $fileexclude = $pbconf['index_options']['fileexclude'];
 $folderexclude = $pbconf['index_options']['folderexclude'];
 $mimedebug = boolinate($pbconf['index_options']['mimedebug']);
-$sorttype = $pbconf['index_options']['sortby'];
+$sorttype = $pbconf['index_options']['sort'];
 $sortdir = $pbconf['index_options']['direction'];
 include "plopbox/images/mimetypes/iconindex";
+
 
 // Setup timezone
 if (!empty($timezone)) {
@@ -72,11 +76,6 @@ if (empty($secret)) {
 if (empty($droot)) {
   $logmsg .= 'ERROR: $droot variable not set in pbconf.ini!';
   $logmsg2 .= 'ERROR: $droot variable not set in pbconf.ini!<br>';
-  $stoperror = true;
-}
-if (session_status() == PHP_SESSION_DISABLED) {
-  $logmsg .= ' ERROR: PHP sessions are disabled!';
-  $logmsg2 .= ' ERROR: PHP sessions are disabled!<br>';
   $stoperror = true;
 }
 if (empty($logpath)) {
@@ -126,161 +125,147 @@ if (!empty($_GET['start']) && ctype_digit($_GET['start'])) {
   $startlink = '';
 }
 
-// Initialize database connection
-try {
-  $db = new PDO("mysql:host=" . $dbauth['dbhost'] . ";dbname=" . $dbauth['dbname'],$dbauth['dbusername'],$dbauth['dbpassword']) or die("Database Error!");
-  $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-}
-catch(PDOException $e) {
-  $logmsg = ' ' . $e;
-  @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg3 . PHP_EOL, FILE_APPEND) or logerror(__LINE__);
-  $db = null;
-  $sth = null;
-  exit();
-}
+// Load Medoo
+require "plopbox/php/medoo/medoo.php";
 
-// Construct initial illegal token/userid hash tables
-try {
-  $db->exec('CREATE TABLE IF NOT EXISTS illegal_tokens (tokenhash TEXT, born INT)');
-  $db->exec('CREATE TABLE IF NOT EXISTS illegal_uids (uidhash TEXT, born INT)');
-}
-catch(PDOException $e) {
-  $logmsg = ' ' . $e;
-  @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg3 . PHP_EOL, FILE_APPEND) or logerror(__LINE__);
-  $db = null;
-  $sth = null;
-  exit();
-}
+// Initialize Medoo database object
+$db = new medoo([
+  'database_type' => 'mysql',
+  'database_name' => $dbauth['dbname'],
+  'server' => $dbauth['dbhost'],
+  'username' => $dbauth['dbusername'],
+  'password' => $dbauth['dbpassword'],
+  'charset' => 'utf8',
+  'option' => [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
+]);
 
-// Remove expired illegal token/uid hashes from the illegal lists
-//(1 in 5 chance)
-gc($db, $logpath);
+// Construct users table
+$db->query("CREATE TABLE IF NOT EXISTS users (uid TEXT, uname TEXT, phash TEXT, flimit INTEGER)");
+// Construct token blacklist table
+$db->query("CREATE TABLE IF NOT EXISTS blacklist (data TEXT, born INTEGER)");
 
-
-// Start session
-if (session_status() == PHP_SESSION_NONE) {
-  session_set_cookie_params(1800, '/', $_SERVER['SERVER_NAME'], false, true);
-  session_start();
-  if (session_status() == PHP_SESSION_ACTIVE) {
-    if (!isset($_SESSION['stoken'])) {
-      $_SESSION['stoken'] = false;
-    }
-    if (!isset($_SESSION['user'])) {
-      $_SESSION['user'] = false;
-    }
-    if (!isset($_SESSION['uid'])) {
-      $_SESSION['uid'] = false;
-    }
-    if ($_SESSION['stoken'] !== false) {
-      if (valstoken($db, session_id(), $_SESSION['uid'], $_SESSION['stoken'], $secret, $logpath, 1800) === false) {
-        $_SESSION['stoken'] = false;
-      }
-    }
-    if ($_SESSION['uid'] !== false) {
-      if (valuid($db, $_SESSION['uid'], $_SESSION['user'], $secret, $logpath, 1800) === 'invalid') {
-        $_SESSION['uid'] = false;
-      }
-    }
-  } else {
-    $logmsg .= ' FATAL ERROR: Could not start browser session!';
-    echo json_encode(array("failmsg" => 'FATAL ERROR: Could not start browser session!', "opcode" => "LoginPage", "statcode" => "Error"));
-    exit;
-  }
+// Blacklist GC (1 in 5 chance)
+if (mt_rand(0, 5) === 1) {
+  $db->delete("blacklist",
+  "data",
+  "born",
+  ["born[<]" => (time() - 1800)]
+);
 }
 
-// State Controller
-if (session_status() == PHP_SESSION_ACTIVE) {
+// Load JWT Library
+use Lcobucci\JWT\Builder;
+use Lcobucci\JWT\Parser;
+use Lcobucci\JWT\ValidationData;
+use Lcobucci\JWT\Signer\Keychain;
+use Lcobucci\JWT\Signer\Ecdsa\Sha256;
 
-  if ($logout === true) {
-    logout($db, $logpath, $logmsg);
-    header('Location: /');
-    exit;
-  }
+// JWT Validation error
+function jwtError($logpath, $logmsg) {
+  $logmsg .= ' ERROR: Invalid client token. Could not start user session.';
+  echo json_encode(array("failmsg" => ' ERROR: Invalid client token. Could not start user session.', "opcode" => "LoginPage", "statcode" => "Error"));
+  @file_put_contents($logpath . "pblog.txt", $logmsg . PHP_EOL, FILE_APPEND) or logerror(__LINE__);
+  exit;
+}
 
-  // Check if user is logged in
-  if (valstoken($db, session_id(), $_SESSION['uid'], $_SESSION['stoken'], $secret, $logpath, 1800) === true) {
-    // Check user permissions
-    if (($perm = valuid($db, $_SESSION['uid'], $_SESSION['user'], $secret, $logpath, 1800)) !== 'invalid') {
-
-      // Send a requested file to the client
-      if (!isset($_GET['dl'])) {
-        if (is_file($droot . $interlink) && file_exists($droot . $interlink)) {
-          if ($perm[4] === true) {
-            if (preg_match($folderexclude, $interlink) or preg_match($fileexclude, $file) === 1) {
-              $logmsg .= ' ACCESS DENIED';
-              @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg3 . PHP_EOL, FILE_APPEND) or logerror(__LINE__);
-              echo json_encode(array('opcode' => '403'));
-              exit;
-            } else {
-              $_SESSION['dl'] = $droot . $interlink;
-              header('Location: /?dl=' . newtoken(session_id(), $_SESSION['dl'], $secret));
-              exit;
-            }
-          } else {
-            $logmsg .= 'FILE OPERATION FAILURE: User "' . $_SESSION['user'] . '" is not allowed to download files.';
-            @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg3 . PHP_EOL, FILE_APPEND) or logerror(__LINE__);
-            echo json_encode(array('opcode' => '403'));
-            exit;
-          }
+// Process a Session JWT if present
+$startSession = false;
+if (isset($_POST['token'])) {
+  // Parse JWT
+  $jwtToken = (new Parser())->parse((string) $_POST['token']);
+  $jwtToken->getHeaders();
+  $jwtToken->getClaims();
+  // Lookup UID from JWT Claim
+  if ($jwtToken->getClaim('uid') === $db->select("users", ["uid[=]" => $jwtToken->getClaim('uid')])[0]) {
+    // Set JWT Validation Data
+    $jwtData = new ValidationData();
+    $jwtData->setIssuer($host);
+    $jwtData-setAudience($_SERVER['REMOTE_ADDR']);
+    $jwtData->setId($jwtToken->getHeader('jti'));
+    // Validate JWT
+    if ($jwtToken->validate($jwtData) === true) {
+      // Validate Session Token
+      if (valsid($db, $jwtToken->getClaim('uid'), $jwtToken->getClaim('sid'), $secret, 1800) === true) {
+        // Validate User ID & Permissions
+        if (($perm = valuid($db, $jwtToken->getClaim('uid'), $jwtToken->getClaim('username'), $secret, 1800)) !== 'invalid') {
+          $startSession = true;
         }
-      } else if (isset($_GET['dl']) && isset($_SESSION['dl'])) {
-        if (valtoken($db, session_id(), $_GET['dl'], $_SESSION['dl'], $secret, $logpath, 10)) {
-          retire($db, 'token', $_GET['dl'], $logpath);
-          header('Content-Description: File Transfer');
-          header('Content-Type: ' . strstr(finfo_file(finfo_open(FILEINFO_MIME), $_SESSION['dl']), ';', true));
-          header('Content-Disposition: attachment; filename="' . basename($_SESSION['dl']) . '"');
-          header('Expires: 0');
-          header('Cache-Control: must-revalidate');
-          header('Pragma: public');
-          header('Content-Length: ' . filesize($_SESSION['dl']));
-          ob_end_flush();
-          readfile($_SESSION['dl']);
-          $_SESSION['dl'] = null;
+      }
+    }
+  }
+}
+
+// No valid Session JWT - No Session
+if ($startSession === false) {
+  // Load Login Page
+  $ctoken = newtoken(session_id(), 'LPAGE', $secret);
+  require "plopbox/php/login.php";
+
+  // Valid Session JWT - Start Session
+} else if ($startSession === true) {
+
+  // Send a requested file to the client
+  if (!isset($_GET['dl'])) {
+    if (is_file($droot . $interlink) && file_exists($droot . $interlink)) {
+      if ($perm[4] === true) {
+        if (preg_match($folderexclude, $interlink) or preg_match($fileexclude, $file) === 1) {
+          $logmsg .= ' ACCESS DENIED';
+          @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg3 . PHP_EOL, FILE_APPEND) or logerror(__LINE__);
+          echo json_encode(array('opcode' => '403'));
           exit;
-        }
-      }
-
-      // Execute any file operations
-      if (isset($_POST['ftoken'])) {
-        if ($perm[2] && $perm[1] && $perm[0] === true) {
-          $ctoken = newtoken(session_id(), 'FMANAGER', $secret);
-          require "plopbox/php/filemanager.php";
         } else {
-          echo json_encode(array("failmsg" => "Error: You are not allowed to modify files.", "opcode" => "FileIndex", "statcode" => "Error"));
-          $logmsg .= ' FILE OPERATION FAILURE: User "' . $_SESSION['user'] . '" is not allowed to modify files.';
-        }
-      }
-
-      // load Settings Page ...
-      if (isset($_POST['atoken'])) {
-        if ($perm[0] && $perm[1] === true) {
-          $ctoken = newtoken(session_id(), 'ADMIN', $secret);
-          require "plopbox/php/admin.php";
-        } else {
-          header('Location: /');
-          echo msg('noperm_settings');
+          $_SESSION['dl'] = $droot . $privateFolder . $interlink;
+          header('Location: /?dl=' . newtoken(session_id(), $_SESSION['dl'], $secret));
           exit;
         }
       } else {
-
-        // ... or Load Index Core
-        $ctoken = newtoken(session_id(), 'CORE', $secret);
-        require "plopbox/php/core.php";
-
+        $logmsg .= 'FILE OPERATION FAILURE: User "' . $_SESSION['user'] . '" is not allowed to download files.';
+        @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg3 . PHP_EOL, FILE_APPEND) or logerror(__LINE__);
+        echo json_encode(array('opcode' => '403'));
+        exit;
       }
-    } else {
-      // User is logged in with an invalid UID.
-      @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg3 . PHP_EOL, FILE_APPEND) or logerror(__LINE__);
-      logout($db, $logpath, $logmsg, ': UID for User "' . $_SESSION['user'] . '" is invalid. Logging user out.');
-      echo json_encode(array("opcode" => "LoginPage", "statcode" => "Error", "failmsg" => "You have been logged out by the server."));
+    }
+  } else if (isset($_GET['dl']) && isset($_SESSION['dl'])) {
+    if (valtoken($db, session_id(), $_GET['dl'], $_SESSION['dl'], $secret, $logpath, 10)) {
+      retire($db, 'token', $_GET['dl'], $logpath);
+      header('Content-Description: File Transfer');
+      header('Content-Type: ' . strstr(finfo_file(finfo_open(FILEINFO_MIME), $_SESSION['dl']), ';', true));
+      header('Content-Disposition: attachment; filename="' . basename($_SESSION['dl']) . '"');
+      header('Expires: 0');
+      header('Cache-Control: must-revalidate');
+      header('Pragma: public');
+      header('Content-Length: ' . filesize($_SESSION['dl']));
+      ob_end_flush();
+      readfile($_SESSION['dl']);
+      $_SESSION['dl'] = null;
       exit;
     }
-  } else {
-
-    // Because user is not logged in, Load Login Page
-    $ctoken = newtoken(session_id(), 'LPAGE', $secret);
-    require "plopbox/php/login.php";
   }
+
+  // Execute any file operations
+  if (isset($_POST['ftoken'])) {
+    if ($perm[2] && $perm[1] && $perm[0] === true) {
+      $ctoken = newtoken(session_id(), 'FMANAGER', $secret);
+      require "plopbox/php/filemanager.php";
+    }
+  }
+
+  // load Settings Page ...
+  if (isset($_POST['atoken'])) {
+    if ($perm[0] && $perm[1] === true) {
+      $ctoken = newtoken(session_id(), 'ADMIN', $secret);
+      require "plopbox/php/admin.php";
+    } else {
+      header('Location: /');
+      echo msg('noperm_settings');
+      exit;
+    }
+  }
+
+  // Load Index Core
+  $ctoken = newtoken(session_id(), 'CORE', $secret);
+  require "plopbox/php/core.php";
+
 }
 
 // Write to access log

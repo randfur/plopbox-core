@@ -2,6 +2,11 @@
 // PlopBox FileBrowser Global Functions
 if (isset($funcload)) {
 
+  // Convert string "false" to boolean false
+  function boolinate($string) {
+    return $string == 'false' ? false:true;
+  }
+
   // Log write error
   function logerror($lnum = 'undefined') {
     echo 'ERROR writing PlopBox log near line ' . $lnum . '! Check "logpath" in pbconf.ini';
@@ -9,312 +14,173 @@ if (isset($funcload)) {
   }
 
   // Process Log-Out
-  function logout($db, $logpath, $logmsg, $extra = null) {
-    retire($db, 'token', $_SESSION['stoken'], $logpath);
-    retire($db, 'uid', $_SESSION['uid'], $logpath);
-    $_SESSION['stoken'] = $_SESSION['uid'] = $_SESSION['user'] = false;
-    if ($extra !== null) {
-      $logmsg .= $extra;
-    } else {
-      $logmsg .= ': User "' . $_SESSION['user'] . '" has logged out.';
-    }
+  function logout($db, $logpath, $jwtToken, $sid, $username) {
+    retire($db, explode($sid)[1], $sid);
+    retire($db, $jwtToken->getClaim('iat'), $jwtToken);
+    $logmsg .= ': User "' . $username . '" has logged out.';
     @file_put_contents($logpath . "pblog.txt", $logmsg . PHP_EOL, FILE_APPEND) or logerror();
   }
 
-  // Message Bar
-  function msg($type, $nature = 'msg', $custom = '') {
-    switch ($type) {
-      case 'badtoken':
-      $nature = 'failmsg';
-      $msg = 'Error: Invalid/Expired Token.';
-      break;
-      case 'noperm_server':
-      $nature = 'failmsg';
-      $msg = 'Error: You do not have permission to change server settings.';
-      break;
-      case 'noperm_users':
-      $nature = 'failmsg';
-      $msg = 'Error: You do not have permission to manage users.';
-      break;
-      case 'noperm_settings':
-      $nature = 'failmsg';
-      $msg = 'Error: You do not have permission to change settings.';
-      break;
-      case 'badlogin':
-      $nature = 'failmsg';
-      $msg = 'Error: You have entered an incorrect username or password.';
-      break;
-      case 'custom':
-      $nature = $nature;
-      $msg = $custom;
-      break;
-    }
-    return '<div style="visibility:visible;" id="msg" class="' . $nature . '">' . $msg . '<img alt="close" class="msgclose" onclick="msgclose()" src="/plopbox/images/controls/close.png"></div>';
+  function checkBlacklist ($input) {
+    return $db->select("blacklist",
+        "data",
+        ["data[=]" => $input]);
   }
 
-  // Simply converts string "false" to boolean false
-  function boolinate($string) {
-    return $string == 'false' ? false:true;
+  // Add a Token to the blacklist
+  function retire($db, $born, $input) {
+    $db->insert("blacklist", [
+      "data" => $input,
+      "born" => $born
+    ]);
   }
 
-  // Remove expired token/uid hashes from the illegal lists
-  // (1 in 5 chance)
-  function gc($db, $logpath) {
-    if (mt_rand(0, 5) === 3) {
-      try {
-        $sth = $db->prepare('DELETE FROM illegal_tokens WHERE born<:t');
-        $sth->bindValue(':t', time(), PDO::PARAM_STR);
-        $sth->execute();
-        $sth = $db->prepare('DELETE FROM illegal_uids WHERE born<:t');
-        $sth->bindValue(':t', time(), PDO::PARAM_STR);
-        $sth->execute();
-      } catch(PDOException $e) {
-        $logmsg = ' ' . $e;
-        @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg3 . PHP_EOL, FILE_APPEND) or logerror();
-        $db = null;
-        $sth = null;
-        exit($e);
-      }
-    }
-  }
-
-  // Add a token/userid hash to the illegal lists
-  function retire($db, $type, $input, $logpath) {
-    if ($type === 'token') {
-      try {
-        $sth = $db->prepare('INSERT INTO illegal_tokens (tokenhash, born) VALUES (:tokenhash, :born)');
-        $sth->bindValue(':tokenhash', explode('-', $input)[2]);
-        $sth->bindValue(':born', (int) explode('-', $input)[1]);
-        $sth->execute();
-        $sth = null;
-      } catch(PDOException $e) {
-        $logmsg = ' ' . $e;
-        @file_put_contents($logpath . "pblog.txt", $logmsg . PHP_EOL, FILE_APPEND) or logerror();
-        $db = null;
-        $sth = null;
-        exit($e);
-      }
-    } else if ($type === 'uid') {
-      try {
-        $sth = $db->prepare('INSERT INTO illegal_uids (uidhash, born) VALUES (:uidhash, :born)');
-        $sth->bindValue(':uidhash', explode('-', $input)[3]);
-        $sth->bindValue(':born', (int) explode('-', $input)[1]);
-        $sth->execute();
-        $sth = null;
-      } catch(PDOException $e) {
-        $logmsg = ' ' . $e;
-        @file_put_contents($logpath . "pblog.txt", $logmsg . PHP_EOL, FILE_APPEND) or logerror();
-        $db = null;
-        $sth = null;
-        exit($e);
-      }
-    }
-    return;
-  }
-
-  // Generate Token
-  function newtoken($sid, $c, $s) {
-    $tkn = dechex(mt_rand());
+  // Generate Generic Token
+  function newtoken($secret, $command = "") {
+    $rand = dechex(mt_rand());
     $time = dechex(time());
-    return $tkn . '-' . $time . '-' . hash_hmac('sha1', $tkn . $time . $sid . $c, $s);
+    return $rand . '-' . $time . '-' . hash_hmac('sha256', $rand . $time . $command, $secret);
   }
 
-  // Generate Session Token
-  function newstoken($sid, $uid, $s) {
-    $tkn = dechex(mt_rand());
+  // Generate Session ID Token
+  function newsid($uid, $secret) {
+    $rand = dechex(mt_rand());
     $time = dechex(time());
-    $role = explode('-', $uid)[2];
-    return $tkn . '-' . $time . '-' . hash_hmac('sha1', $role . $uid . $tkn . $time . $sid, $s);
+    return $rand . '-' . $time . '-' . hash_hmac('sha256', $uid . $rand . $time, $secret);
   }
 
-  // Validate Token
-  function valtoken($db, $sid, $t, $c, $s, $logpath, $to = false) {
-    $tin = explode('-', $t);
-    try {
-      $sth = $db->prepare('SELECT tokenhash FROM illegal_tokens WHERE tokenhash=:t');
-      $sth->bindValue(':t', $tin[2], PDO::PARAM_STR);
-      $sth->execute();
-      while ($row = $sth->fetch(PDO::FETCH_ASSOC)) {
-        if (isset($row['token'])) {
-          if ($row['token'] === $tin[2]) {
-            $sth = null;
+  // Validate Generic Token
+  function valtoken($db, $token, $command, $secret, $to = false) {
+    // Check blacklist for supplied Token
+    $bToken = checkBlacklist($token);
+    if ($bToken === $token) {
+      return false;
+    } else if ($bToken === false) {
+      // Match hash signature
+      $tokenArray = explode('-', $token);
+      if (hash_hmac('sha256', $tokenArray[0] . $tokenArray[1] . $sid . $command, $secret) == $tokenArray[2]) {
+        // Check if Token has expired
+        if ($timeout !== false) {
+          if ($_SERVER['REQUEST_TIME'] - hexdec($tokenArray[1]) > $timeout) {
             return false;
-          } else {
-            continue;
+          } else if ($_SERVER['REQUEST_TIME'] - hexdec($tokenArray[1]) < $timeout) {
+            return true;
           }
-        }
-      }
-    } catch(PDOException $e) {
-      $logmsg = ' ' . $e;
-      @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg3 . PHP_EOL, FILE_APPEND) or logerror();
-      $db = null;
-      $sth = null;
-      exit($e);
-    }
-    if (hash_hmac('sha1', $tin[0] . $tin[1] . $sid . $c, $s) == $tin[2]) {
-      if ($to !== false) {
-        if ($_SERVER['REQUEST_TIME'] - hexdec($tin[1]) > $to) {
-          return false;
-        } else if ($_SERVER['REQUEST_TIME'] - hexdec($tin[1]) < $to) {
+        } else {
           return true;
         }
       } else {
-        return true;
+        return false;
       }
-    } else {
-      return false;
     }
   }
 
-  // Validate Session Token
-  function valstoken($db, $sid, $uid, $t, $s, $logpath, $to = false) {
-    if ($t === false) {
+  // Validate Session ID Token & return boolean
+  function valsid($db, $uid, $sid, $secret, $timeout = false) {
+    // Check blacklist for supplied SID
+    $bSid = checkBlacklist($sid);
+    if ($bSid === $sid) {
       return false;
-    }
-    $sin = explode('-', $t);
-    try {
-      $sth = $db->prepare('SELECT tokenhash FROM illegal_tokens WHERE tokenhash=:t');
-      $sth->bindValue(':t', $sin[2], PDO::PARAM_STR);
-      $sth->execute();
-      while ($row = $sth->fetch(PDO::FETCH_ASSOC)) {
-        if (isset($row['token'])) {
-          if ($row['token'] === $sin[2]) {
-            $sth = null;
+    } else if ($bSid === false) {
+      // Match hash signature
+      $sidArray = explode('-', $sid);
+      if (hash_hmac('sha256', explode('-', $uid)[2] . $uid . $sidArray[0] . $sidArray[1], $secret) === $sidArray[2]) {
+        // Check if SID has expired
+        if ($timeout !== false) {
+          if ($_SERVER['REQUEST_TIME'] - hexdec($sidArray[1]) > $timeout) {
             return false;
-          } else {
-            continue;
+          } else if ($_SERVER['REQUEST_TIME'] - hexdec($sidArray[1]) < $timeout) {
+            return true;
           }
-        }
-      }
-    } catch(PDOException $e) {
-      $logmsg = ' ' . $e;
-      @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg3 . PHP_EOL, FILE_APPEND) or logerror();
-      $db = null;
-      $sth = null;
-      exit($e);
-    }
-    if (hash_hmac('sha1', explode('-', $uid)[2] . $uid . $sin[0] . $sin[1] . $sid, $s) == $sin[2]) {
-      if ($to !== false) {
-        if ($_SERVER['REQUEST_TIME'] - hexdec($sin[1]) > $to) {
-          return false;
-        } else if ($_SERVER['REQUEST_TIME'] - hexdec($sin[1]) < $to) {
+        } else {
           return true;
         }
       } else {
-        return true;
+        return false;
       }
-    } else {
-      return false;
     }
   }
 
-  // Validate User ID & Return Permissions
-  function valuid($db, $uid, $u, $s, $logpath, $to = false) {
-    $idt = explode('-', $uid);
-    $role = explode('/', $idt[2]);
-    $check = array();
-    $count = 0;
-    $timedout = false;
-    try {
-      $sth = $db->prepare('SELECT uidhash FROM illegal_uids WHERE uidhash=:uid');
-      $sth->bindValue(':uid', $idt[3], PDO::PARAM_STR);
-      $sth->execute();
-      while ($row = $sth->fetch(PDO::FETCH_ASSOC)) {
-        if (isset($row['uid'])) {
-          if ($row['uid'] === $idt[3]) {
-            $sth = null;
-            return 'invalid';
-          } else {
-            continue;
+  // Validate User ID Token & Return boolean Permissions Array or string "invalid"
+  function valuid($db, $uid, $username, $secret, $timeout = false) {
+    // Check blacklist for the supplied UID
+    $bUid = checkBlacklist($uid);
+    if ($bUid === $uid) {
+      return ["success" => false];
+    } else if ($bUid === false) {
+      // Get equivalent UID from Database
+      $dbUid = $db->select("users",
+          "uid",
+          ["uid[=]" => $uid]);
+      // Check if Database UID matches provided UID
+      if ($dbUid === false) {
+        return ["success" => false];
+      } else if ($dbUid === $uid) {
+        // Match hash signature
+        $uidArray = explode('-', $uid);
+        if (hash_hmac('sha256', $uidArray[0] . $uidArray[1] . $username . $uidArray[2], $secret) === $uidArray[3]) {
+          // Check if UID has expired
+          if ($timeout !== false) {
+            if ($_SERVER['REQUEST_TIME'] - hexdec($uidArray[1]) > $timeout) {
+              return ["success" => false];
+            }
           }
-        }
-      }
-    } catch(PDOException $e) {
-      $logmsg = ' ' . $e;
-      @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg3 . PHP_EOL, FILE_APPEND) or logerror();
-      $db = null;
-      $sth = null;
-      exit($e);
-    }
-    if (hash_hmac('md5', $idt['0'] . $idt['1'] . $u . $idt['2'], $s) == $idt['3']) {
-      if ($to !== false) {
-        if ($_SERVER['REQUEST_TIME'] - hexdec($idt[1]) > $to) {
-          $timedout = true;
-        }
-      }
-      if ($timedout === false) {
-        foreach ($role as $flag) {
-          if ($flag == '1') {
-            $check[$count] = true;
-            $count++;
-          } else if ($flag == '0') {
-            $check[$count] = false;
-            $count++;
+          // Construct boolean permission array
+          $permFlags = explode('/', explode('-', $dbUid)[2]);
+          $i = 0;
+          foreach ($permFlags as $flag) {
+            if ($flag == '1') {
+              $permArray[] = true;
+            } else if ($flag == '0') {
+              $permArray[] = false;
+            }
           }
+          // Label boolean permission array
+          $permArrayNamed = array(
+            "login" => $perms[0],
+            "view" => $perms[1],
+            "mod" => $perms[2],
+            "newDir" => $perms[3],
+            "download" => $perms[4],
+            "upload" => $perms[5],
+            "delete" => $perms[6],
+            "admin" => $perms[7],
+            "superadmin" => $perms[8],
+            "success" => true
+          );
+          return $permArrayNamed;
+        } else {
+          return ["success" => false];
         }
-      } else if ($timedout === true) {
-        return 'invalid';
       }
-    } else {
-      return 'invalid';
-    }
-    return $check;
-  }
-
-  // Generate new User ID from permission string
-  function newuid($db, $u, $r, $s, $logpath, $update = false) {
-    $rand = dechex(mt_rand(1000000000, 9999999999));
-    $time = dechex(time());
-    $uid = $rand . '-' . $time . '-' . $r . '-' . hash_hmac('md5', $rand . $time . $u . $r, $s);
-    if ($update === true) {
-      try {
-        $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        $sth = $db->prepare('UPDATE users SET uid=:uid WHERE uname=:u');
-        $sth->bindValue(':uid', $uid);
-        $sth->bindValue(':u', $u);
-        $sth->execute();
-        $sth = null;
-        return $uid;
-      }
-      catch(PDOException $e) {
-        $logmsg = ' ' . $e;
-        @file_put_contents($logpath . "pblog.txt", $logmsg . PHP_EOL, FILE_APPEND) or logerror();
-        $db = null;
-        $sth = null;
-        exit($e);
-      }
-    } else if ($update === false) {
-      return $uid;
     }
   }
 
-  // Generate new User ID from old User ID
-  function recalcuid($db, $olduid, $u, $s, $logpath, $update = false) {
-    $uidrole = explode('-', $olduid)['2'];
-    $rand = dechex(mt_rand(1000000000, 9999999999));
+  // Generate new User ID Token from permissions a string
+  function newuid($db, $username, $permissions, $secret) {
+    // Generate UID
+    $rand = dechex(mt_rand());
     $time = dechex(time());
-    if (valuid($db, $olduid, $u, $s, $logpath) !== 'invalid') {
-      $newuid = $rand . '-' . $time . '-' . $uidrole . '-' . hash_hmac('md5', $rand . $time . $u . $uidrole, $s);
-      if ($update === true) {
-        try {
-          $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-          $sth = $db->prepare('UPDATE users SET uid=:uid WHERE uname=:u');
-          $sth->bindValue(':uid', $newuid);
-          $sth->bindValue(':u', $u);
-          $sth->execute();
-          $sth = null;
-          return $newuid;
-        }
-        catch(PDOException $e) {
-          $logmsg = ' ' . $e;
-          @file_put_contents($logpath . "pblog.txt", $logmsg . PHP_EOL, FILE_APPEND) or logerror();
-          $db = null;
-          $sth = null;
-          exit($e);
-        }
-      } else if ($update === false) {
-        return $newuid;
-      }
+    $uid = $rand . '-' . $time . '-' . $permissions . '-' . hash_hmac('sha256', $rand . $time . $username . $permissions, $secret);
+    // Update user in DB
+    $db->update("users",
+        "uid",
+        ["uname[=]" => $uid]);
+  }
+
+  // Generate a new User ID Token from an old User ID
+  function recalcuid($db, $oldUid, $username, $secret) {
+    // Validate old UID
+    if (valuid($db, $oldUid, $username, $secret) !== 'invalid') {
+      // Generate new UID
+      $permissions = explode('-', $oldUid)['2'];
+      $rand = dechex(mt_rand());
+      $time = dechex(time());
+      $uid = $rand . '-' . $time . '-' . $permissions . '-' . hash_hmac('sha256', $rand . $time . $username . $permissions, $secret);
+      // Update user in DB
+      $db->update("users",
+          "uid",
+          ["uid[=]" => $oldUid]);
     } else {
       return false;
     }

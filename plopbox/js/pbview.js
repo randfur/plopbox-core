@@ -1,20 +1,32 @@
-// PlopBox View Presenter
-
-// Misc. Functions
+/*   |
+,---.|---.
+|   ||   |
+|---'`---'
+|
+PlopBox
+View Presenter
+*/
 
 // Render Page
-function pageView (pagedata) {
+function pageView (pagedata, navigator) {
+  console.log("PageView= " + navigator.uri);
   // Login Page
   switch (pagedata.opcode) {
     case 'LoginPage':
 
     $("#template-container").loadTemplate("plopbox/templates/login.html", pagedata, {
       success: function () {
-        document.title = "PlopBox - Log In";
-        document.getElementById("loginsubmit").addEventListener("click",
-        function () {
-          postData($("#loginform").serializeArray());
-        });
+        $("#page-container").loadTemplate("#logintemplate"), pagedata, {
+          success: function () {
+            console.log("Callback1= " + navigator.uri);
+            document.title = "PlopBox - Log In";
+            document.getElementById("loginsubmit").addEventListener("click",
+            function () {
+              console.log("CallBack2= " + navigator.uri);
+              postData(navigator, $("#loginform").serializeArray());
+            });
+          }
+        }
       }
     });
     break;
@@ -34,10 +46,10 @@ function pageView (pagedata) {
 
     // File Index
     case 'FileIndex':
-    if (pagedata.statcode == '03') {
+    if (pagedata.statcode == 'ViewDeny') {
       // TODO: File View Permission Failure
 
-    } else if (pagedata.statcode == '04') {
+    } else if (pagedata.statcode == 'Empty') {
       // TODO: Empty Directory
 
     } else {
@@ -46,7 +58,7 @@ function pageView (pagedata) {
       $("#template-container").loadTemplate("plopbox/templates/core.html", pagedata, {
         success: function () {
 
-          document.title = "PlopBox - Browsing " + pointer;
+          document.title = "PlopBox - Browsing " + navigator.uri;
 
           // Page Navigation Buttons
           pagedata.nextButton = 'visibility:hidden;';
@@ -56,7 +68,7 @@ function pageView (pagedata) {
               pagedata.nextButton = 'visibility:visible;';
               document.getElementById("nextButton").addEventListener("click",
               function () {
-                pointer.args.add(["fstart=" + str(pagedata.fstart + pagedata.flimit]));
+                navigator.args.add(["fstart=" + str(pagedata.fstart + pagedata.flimit)]);
                 getData();
               });
             }
@@ -64,7 +76,7 @@ function pageView (pagedata) {
               pagedata.prevButton = 'visibility:visible;';
               document.getElementById("prevButton").addEventListener("click",
               function () {
-                pointer.args.add(["fstart=" + str(pagedata.fstart - pagedata.flimit]));
+                navigator.args.add(["fstart=" + str(pagedata.fstart - pagedata.flimit)]);
                 getData();
               });
             };
@@ -79,7 +91,7 @@ function pageView (pagedata) {
             pagedata.namesortarrow = arrow["up"];
             document.getElementById("cname").addEventListener("click",
             function () {
-              pointer.args.add("sort=1");
+              navigator.args.add("sort=1");
               getData();
             });
             break;
@@ -87,7 +99,7 @@ function pageView (pagedata) {
             pagedata.namesortarrow = arrow["down"];
             document.getElementById("cname").addEventListener("click",
             function () {
-              pointer.args.add("sort=0");
+              navigator.args.add("sort=0");
               getData();
             });
             break;
@@ -95,7 +107,7 @@ function pageView (pagedata) {
             pagedata.datesortarrow = arrow["up"];
             document.getElementById("cdate").addEventListener("click",
             function () {
-              pointer.args.add("sort=3");
+              navigator.args.add("sort=3");
               getData();
             });
             break;
@@ -103,7 +115,7 @@ function pageView (pagedata) {
             pagedata.datesortarrow = arrow["down"];
             document.getElementById("cdate").addEventListener("click",
             function () {
-              pointer.args.add("sort=2");
+              navigator.args.add("sort=2");
               getData();
             });
             break;
@@ -111,7 +123,7 @@ function pageView (pagedata) {
             pagedata.sizesortarrow = arrow["up"];
             document.getElementById("csize").addEventListener("click",
             function () {
-              pointer.args.add("sort=5");
+              navigator.args.add("sort=5");
               getData();
             });
             break;
@@ -119,7 +131,7 @@ function pageView (pagedata) {
             pagedata.sizesortarrow = arrow["down"];
             document.getElementById("csize").addEventListener("click",
             function () {
-              pointer.args.add("sort=4");
+              navigator.args.add("sort=4");
               getData();
             });
             break;
@@ -148,10 +160,34 @@ function pageView (pagedata) {
     break;
   };
 
+  function closeMsg () {
+    document.getElementById("msgclose").addEventListener("click",
+    function () {
+      $("#msg").remove();
+      $("#msgclose").remove();
+    });
+  };
+
   // Server Message Display
   if (pagedata.statcode == 'Success') {
-    document.getElementById("msg").style.visibility = "visible";
-  } else if (pagedata.statcode == 'Error') {
-    document.getElementById("failmsg").style.visibility = "visible";
-  };
+    // On Success Message
+    $("#message-container").loadTemplate("#msgtemplate", {
+      msgclass: "msg",
+      msgtext: pagedata.msg
+    },
+    {
+      success: closeMsg
+    }
+  );
+
+} else if (pagedata.statcode == 'Error') {
+  // On Error Message
+  $("#message-container").loadTemplate("#msgtemplate", {
+    msgclass: "failmsg",
+    msgtext: pagedata.msg
+  },
+  {
+    success: closeMsg
+  });
+};
 };

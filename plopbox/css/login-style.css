@@ -1,0 +1,308 @@
+/* PlopBox Login Page Stylesheet */
+
+/* Fonts */
+@import url('//fonts.googleapis.com/css?family=Oswald');
+@import url('//fonts.googleapis.com/css?family=Poiret+One');
+
+.loginlogo {
+  position:relative;
+  display:inline-block;
+  margin:auto;
+  color:#4d4d4d;
+  font-family:'Poiret One';
+  font-size:80px;
+  text-shadow: 1px 2px 3px black;
+  top: -65px; left: 0; bottom: 0; right: 0;
+  z-index:11;
+}
+
+.clouds {
+  background-repeat: repeat;
+  background-image: url("/plopbox/images/controls/clouds.png");
+  background-position:center;
+  height:100%;
+  width:100%;
+  display:inline;
+  position:absolute;
+  overflow:hidden;
+  opacity:0.07;
+  min-height:335px;
+  min-width:300px;
+}
+
+.loginpage {
+  width:100%;
+  height:100%;
+  min-height:335px;
+  min-width:300px;
+  overflow:hidden;
+  display:inline;
+  position:absolute;
+  background-image: url("/plopbox/images/controls/over_pattern.png");
+  background-size:8px;
+  background-repeat:repeat;
+
+}
+
+.loginbox {
+  top: 80px; left: 0; bottom: 0; right: 0;
+  position:fixed;
+  margin:auto;
+  width:300px;
+  height:240px;
+  background-image:url("/plopbox/images/controls/boxtexture.gif");
+  box-shadow:0px 6px 13px rgba(0, 0, 0, 0.4);
+  border-radius:10px;
+  border:1px solid #666666;
+  z-index:11;
+}
+
+.loginboxwrapper {
+  top: 0px; left: 0; bottom: 0; right: 0;
+  position: absolute;
+  display:block;
+  height:100%;
+  width:100%;
+  z-index:11;
+}
+
+.loginpagebackground {
+  position:absolute;
+  display:inline;
+  background: linear-gradient(0deg, #ae929f, #d5c9b3, #5783a7);
+  background-size: 600% 600%;
+  opacity:0.9;
+  -webkit-animation: loginpage 180s ease infinite;
+  -moz-animation: loginpage 180s ease infinite;
+  animation: loginpage 180s ease infinite;
+  width:100%;
+  height:100%;
+  min-height:335px;
+  min-width:300px;
+  overflow:hidden;
+}
+
+@-webkit-keyframes loginpage {
+  0%{background-position:88% 0%}
+  50%{background-position:13% 100%}
+  100%{background-position:88% 0%}
+}
+@-moz-keyframes loginpage {
+  0%{background-position:88% 0%}
+  50%{background-position:13% 100%}
+  100%{background-position:88% 0%}
+}
+@keyframes loginpage {
+  0%{background-position:88% 0%}
+  50%{background-position:13% 100%}
+  100%{background-position:88% 0%}
+}
+
+.loginform{
+  display:static;
+  position:block;
+  padding-top:20px;
+  padding-bottom:13px;
+  width:280px;
+  border-radius:2px;
+  font-family: Arial, Helvetica, sans-serif;
+  overflow:visible;
+}
+
+.loginform ul{
+  list-style:none;
+  padding:0;
+  margin:0;
+}
+.loginform li{
+  display: block;
+  padding: 9px;
+  border:1px solid #808080;
+  margin-bottom: 25px;
+  border-radius: 3px;
+}
+.loginform li:last-child{
+  margin-bottom: 0px;
+}
+.loginform li > label{
+  display: block;
+  float: left;
+  margin-top: -19px;
+  background-image:url("/plopbox/images/controls/boxtexture.gif");
+  height: 14px;
+  padding: 2px 5px 2px 5px;
+  color: #808080;
+  font-size: 14px;
+  overflow: visible;
+  font-family: Arial, Helvetica, sans-serif;
+}
+.loginform input[type="text"],
+.loginform input[type="date"],
+.loginform input[type="datetime"],
+.loginform input[type="email"],
+.loginform input[type="number"],
+.loginform input[type="search"],
+.loginform input[type="time"],
+.loginform input[type="url"],
+.loginform input[type="password"],
+.loginform textarea,
+.loginform select
+{
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  width: 100%;
+  text-align:center;
+  display: inline;
+  outline: none;
+  border: none;
+  height: 30px;
+  background-color: transparent;
+  line-height: 28px;
+  font-size: 25px;
+  padding: 0px;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.loginform input[type="text"]:focus,
+.loginform input[type="date"]:focus,
+.loginform input[type="datetime"]:focus,
+.loginform input[type="email"]:focus,
+.loginform input[type="number"]:focus,
+.loginform input[type="search"]:focus,
+.loginform input[type="time"]:focus,
+.loginform input[type="url"]:focus,
+.loginform input[type="password"]:focus,
+.loginform textarea:focus,
+.loginform select:focus {
+}
+
+.loginform li > span{
+  background: #808080;
+  display: block;
+  padding: 0.2px;
+  margin: 0 -9px -9px -9px;
+  text-align: center;
+  color: #EAEAEA;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 11px;
+}
+.loginform textarea{
+  resize:none;
+}
+
+.logintext {
+  display:block;
+  position:absolute;
+  height:100%;
+  width:100%;
+  padding-top:14px;
+  text-align:center;
+  z-index:1;
+}
+
+.loginbutton {
+  background-color:lightgrey;
+  margin-bottom:10px;
+  display:inline-block;
+  position:relative;
+  width: 200px;
+  height:50px;
+  border-top:1px solid lightgrey;
+  border-left:1px solid #bfbfbf;
+  border-right:1px solid #bfbfbf;
+  border-bottom: 6px ridge lightgrey;
+  border-radius: 8px;
+  color:#4d4d4d;
+  font-weight:900;
+  box-shadow: inset 0px -2px 20px 0px rgba(180,180,180,1);
+}
+
+.loginbutton:hover {
+  background-color:#ebf2f9;
+  cursor:pointer;
+}
+
+
+.loginbutton:active {
+  height:44px;
+  border-bottom: 2px outset lightgrey;
+  bottom: -6px;
+  cursor:pointer;
+}
+
+
+/* PlopBox Error Page */
+
+.errcontainer {
+  top: -20px; left: 0; bottom: 0; right: 0;
+  position:fixed;
+  margin:auto;
+  width:220px;
+  height:200px;
+  text-align:center;
+  z-index:11;
+}
+
+.errcode {
+  font-family:'Poiret One';
+  font-size:115px;
+  color:white;
+  display:inline-block;
+  line-height:normal;
+  height:auto;
+  width:auto;
+  text-shadow: 1px 1px 1px black;
+}
+
+.errdesc {
+  font-family:'Poiret One';
+  font-size:28px;
+  font-weight:bold;
+  color:white;
+  line-height:normal;
+  width:auto;
+  height:auto;
+  display:block;
+  text-shadow: 1px 1px 1px black;
+}
+
+
+/* Misc */
+
+* {
+  margin:0;
+  padding:0;
+  -webkit-box-sizing:border-box;
+  -moz-box-sizing:border-box;
+  box-sizing: border-box;
+}
+
+@-ms-viewport{
+  width:500px;
+}
+
+html {
+  min-height:100%;
+  color:#61666c;
+  font-weight:400;
+  font-size:1em;
+  font-family:'Oswald';
+  line-height:1em;
+}
+body {
+  position:absolute;
+  display:flex;
+  min-height:100%;
+  width:100%;
+}
+code {
+  font-family:consolas,monospace;
+}
+a {
+  color:#61666c;
+  text-decoration:none;
+}
+a:hover {
+  color:black;
+}

@@ -1,16 +1,43 @@
+<script type="text/html" id="logintemplate">
 <div class="loginpage">
   <div align="Center" id="loginbox" class="loginbox">
     <div class="loginlogo">plopbox</div>
     <div class="loginboxwrapper">
       <form class="loginform" id="loginform">
         <input id="logintoken" type="hidden" name="logintoken" data-value="logintoken">
-        <ul><li><label for="username">Username</label><input type="text" autocomplete="new-username" name="username" id="username" maxlength="20"><span>Forgot your Username?</span></li>
-          <li style="margin-bottom:6px;"><label for="password">Password</label><input type="password" autocomplete="new-password" name="password" id="password" maxlength="32"><span>Forgot your Password?</span></li>
-          <li><input id="loginsubmit" type="button" value="Log In"></li>
+        <ul>
+          <li><label for="username">Username</label><input type="text" autocomplete="new-username" name="username" id="username" maxlength="20"><span>Forgot your Username?</span></li>
+          <li><label for="password">Password</label><input type="password" autocomplete="new-password" name="password" id="password" maxlength="32"><span>Forgot your Password?</span></li>
         </ul>
       </form>
+      <div id="loginsubmit" class="loginbutton">
+        <div class="logintext">Log In</div>
+      </div>
     </div>
   </div>
 </div>
 <div class="loginpagebackground"></div>
 <div class="clouds"></div>
+</script>
+
+<script type="text/html" id="putemplate">
+  <div class="loginpage">
+    <div align="Center" id="createpubox" class="loginbox">
+      <div class="loginlogo">plopbox</div>
+      <div class="loginboxwrapper">
+        Create Primary User Account
+        <form class="loginform" id="puform">
+          <input id="createputoken" type="hidden" name="logintoken" data-value="token">
+          <ul><li><label for="username">Username</label><input type="text" autocomplete="new-username" name="puusername" id="puusername" maxlength="20"></li>
+            <li><label for="password">Password</label><input type="password" autocomplete="new-password" name="pupassword" id="pupassword" maxlength="32"></li>
+            <li><input id="pusubmit" type="button" value="Create User"></li>
+          </ul>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="loginpagebackground"></div>
+  <div class="clouds"></div>
+</script>
+
+<div id="page-container"></div>
