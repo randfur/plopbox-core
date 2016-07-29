@@ -147,10 +147,7 @@ $db->query("CREATE TABLE IF NOT EXISTS blacklist (data TEXT, born INTEGER)");
 // Blacklist GC (1 in 5 chance)
 if (mt_rand(0, 5) === 1) {
   $db->delete("blacklist",
-  "data",
-  "born",
-  ["born[<]" => (time() - 1800)]
-);
+  ["born[<]" => (time() - 1800)]);
 }
 
 // Load JWT Library
@@ -168,7 +165,7 @@ function jwtError($logpath, $logmsg) {
   exit;
 }
 
-// Process a Session JWT if present
+// Process a Session JWT from a client
 $startSession = false;
 if (isset($_POST['token'])) {
   // Parse JWT

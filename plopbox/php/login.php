@@ -4,10 +4,9 @@
 // Check Core Mothership Token
 if (function_exists('valtoken')) {
   if (!empty($ctoken)) {
-    if (valtoken($db, $ctoken, 'LPAGE', $secret, $logpath, 10) === false) {
+    if (valtoken($db, $ctoken, 'LPAGE', $secret, 10) === false) {
       $logmsg .= " LOGIN PAGE, ACCESS DENIED: INVALID/EXPIRED CORE TOKEN (Suspicious!)";
       @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg3 . PHP_EOL, FILE_APPEND) or logerror(__LINE__);
-      $_SESSION['stoken'] = false;
       echo json_encode(array('opcode' => '403'));
       exit;
     } else if (valtoken($db, $ctoken, 'LPAGE', $secret, 10) === true) {
@@ -63,67 +62,70 @@ if (function_exists('valtoken')) {
                   if ($perm["success"] === true) {
                     if ($perm["login"] === true) {
 
-                      // Create new JWT Session Token
-                      $uid = recalcuid($db, explode('-', $udata['uid'])[3], $udata['uname'], $secret, $logpath, true);
+                      // Create new Session ID Token
+                      $sid = newstoken(session_id(), $uid, $secret);
+                      // Regenerate User ID
+                      $uid = recalcuid($db, explode('-', $udata['uid'])[3], $udata['uname'], $secret, true);
+                      // Extract permissions array from User ID
                       $perm = valuid($db, $uid, $uname, $secret, $logpath, 1800);
+
+                      // Generate RSA Key Pair
+                      $keys = openssl_pkey_new();
+                      openssl_pkey_export($keys, $privkey, null);
+                      $pubkey = openssl_pkey_get_details($keys)['key'];
+
+                      // Generate new Session JSON Web Token
                       $jwtSigner = new Sha256();
                       $jwtKeychain = new Keychain();
 
                       $jwtToken = (new Builder())->setIssuer($host)
                       ->setAudience($_SERVER['REMOTE_ADDR'])
-                      ->setId(dechex(mt_rand()))
+                      ->setId($sid)
                       ->setIssuedAt(time())
                       ->setNotBefore(time())
                       ->setExpiration(time() + 1800)
-                      ->set('sidHash', newstoken(session_id(), $uid, $secret))
-                      ->set('uidHash', explode('-', $uid)[3])
+                      ->set('uid', $uid)
                       ->sign($signer, $keychain->getPrivateKey())
                       ->getToken();
 
                       // Send JWT Session Token
                       echo $jwtToken;
 
-                      $logmsg4 .= ' LOGIN PAGE, AUTH OK: User "' . $_SESSION['user'] . '" logged in successfully.';
+                      $logmsg4 .= ' LOGIN PAGE, AUTH OK: User "' . $curUser . '" logged in successfully.';
                       @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg4 . PHP_EOL, FILE_APPEND) or logerror(__LINE__);
 
                       // ... or load the dialog box.
                     } else {
-                      $_SESSION['stoken'] = $_SESSION['uid'] = $_SESSION['user'] = false;
                       $token = newtoken(session_id(), 'LDATA', $secret);
                       echo json_encode(array('opcode' => 'LoginPage', 'statcode' => 'Error', 'token' => $token, 'msg' => 'Error: You are not allowed to log in.'));
                       $token = null;
                       $logmsg .= ' LOGIN PAGE, AUTH FAILURE: User "' . $_POST['username'] . '" is not allowed to log in.';
                     }
                   } else {
-                    $_SESSION['stoken'] = $_SESSION['uid'] = $_SESSION['user'] = false;
                     $token = newtoken(session_id(), 'LDATA', $secret);
                     echo json_encode(array('opcode' => 'LoginPage', 'statcode' => 'Error', 'token' => $token, 'msg' => 'FATAL DATABASE ERROR: Unable to log in.'));
                     $token = null;
                     $logmsg .= ' LOGIN PAGE, FATAL DATABASE ERROR: UID for User "' . $_POST['username'] . '" has been tampered with! You must delete the user.';
                   }
                 } else {
-                  $_SESSION['stoken'] = $_SESSION['uid'] = $_SESSION['user'] = false;
                   $token = newtoken(session_id(), 'LDATA', $secret);
                   echo json_encode(array('opcode' => 'LoginPage', 'statcode' => 'Error', 'token' => $token, 'msg' => 'Error: You have entered an incorrect username or password.'));
                   $token = null;
                   $logmsg .= ' LOGIN PAGE, AUTH FAILURE: Wrong password for user "' . $_POST['username'] . '".';
                 }
               } else {
-                $_SESSION['stoken'] = $_SESSION['uid'] = $_SESSION['user'] = false;
                 $token = newtoken(session_id(), 'LDATA', $secret);
                 echo json_encode(array('opcode' => 'LoginPage', 'statcode' => 'Error', 'token' => $token, 'msg' => 'Error: You have entered an incorrect username or password.'));
                 $token = null;
                 $logmsg .= ' LOGIN PAGE, AUTH FAILURE: Username "' . $_POST['username'] . '" does not exist.';
               }
             } else if (valtoken($db, session_id(), $_POST['token'], 'LDATA', $secret, $logpath, 300) == false) {
-              $_SESSION['stoken'] = $_SESSION['uid'] = $_SESSION['user'] = false;
               $token = newtoken(session_id(), 'LDATA', $secret);
               echo json_encode(array('opcode' => 'LoginPage', 'statcode' => 'Error', 'token' => $token, 'msg' => 'Error: Invalid/Expired Token.'));
               $token = null;
               $logmsg .= " LOGIN PAGE, AUTH FAILURE: INVALID/EXPIRED TOKEN";
             }
           } else {
-            $_SESSION['stoken'] = $_SESSION['uid'] = $_SESSION['user'] = false;
             $logmsg .= " LOGIN PAGE, AUTH FAILURE: NO TOKEN (Suspicious!)";
             @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg3 . PHP_EOL, FILE_APPEND) or logerror(__LINE__);
             $token = newtoken(session_id(), 'LDATA', $secret);
@@ -131,7 +133,7 @@ if (function_exists('valtoken')) {
             $token = null;
             exit;
           }
-        } else if ($_SESSION['stoken'] === false) {
+        } else {
           $token = newtoken(session_id(), 'LDATA', $secret);
           echo json_encode(array('opcode' => 'LoginPage', 'statcode' => 'OK', 'token' => $token));
           $token = null;
@@ -149,14 +151,12 @@ if (function_exists('valtoken')) {
               $token = null;
               $logmsg .= " LOGIN PAGE, OK: Primary User created!";
             } else if (valtoken($db, session_id(), $_POST['putoken'], 'PUDATA', $secret, $logpath, 300) == false) {
-              $_SESSION['stoken'] == false;
               $logmsg .= " PRIMARY USER CREATION PAGE, AUTH FAILURE: INVALID/EXPIRED TOKEN";
               $token = newtoken(session_id(), 'LDATA', $secret);
               echo json_encode(array('opcode' => 'PUPage', 'statcode' => 'Error', 'token' => $token, 'msg' => 'Error: Invalid/Expired Token.'));
               $token = null;
             }
           } else {
-            $_SESSION['stoken'] == false;
             $logmsg .= " PRIMARY USER CREATION PAGE, AUTH FAILURE: NO TOKEN (Suspicious!)";
             @file_put_contents($logpath . "pblog.txt", $logmsg . $logmsg3 . PHP_EOL, FILE_APPEND) or logerror(__LINE__);
             $token = newtoken(session_id(), 'LDATA', $secret);

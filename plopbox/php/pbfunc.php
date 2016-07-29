@@ -21,10 +21,15 @@ if (isset($funcload)) {
     @file_put_contents($logpath . "pblog.txt", $logmsg . PHP_EOL, FILE_APPEND) or logerror();
   }
 
-  function checkBlacklist ($input) {
-    return $db->select("blacklist",
+  function checkBlacklist ($db, $input) {
+    $check = $db->select("blacklist",
         "data",
         ["data[=]" => $input]);
+    if ($check[0] === "") {
+      return false;
+    } else {
+      return true;
+    }
   }
 
   // Add a Token to the blacklist
@@ -52,8 +57,8 @@ if (isset($funcload)) {
   // Validate Generic Token
   function valtoken($db, $token, $command, $secret, $to = false) {
     // Check blacklist for supplied Token
-    $bToken = checkBlacklist($token);
-    if ($bToken === $token) {
+    $bToken = checkBlacklist($db, $token);
+    if ($bToken !== false) {
       return false;
     } else if ($bToken === false) {
       // Match hash signature
@@ -78,7 +83,7 @@ if (isset($funcload)) {
   // Validate Session ID Token & return boolean
   function valsid($db, $uid, $sid, $secret, $timeout = false) {
     // Check blacklist for supplied SID
-    $bSid = checkBlacklist($sid);
+    $bSid = checkBlacklist($db, $sid);
     if ($bSid === $sid) {
       return false;
     } else if ($bSid === false) {
@@ -104,7 +109,7 @@ if (isset($funcload)) {
   // Validate User ID Token & Return boolean Permissions Array or string "invalid"
   function valuid($db, $uid, $username, $secret, $timeout = false) {
     // Check blacklist for the supplied UID
-    $bUid = checkBlacklist($uid);
+    $bUid = checkBlacklist($db, $uid);
     if ($bUid === $uid) {
       return ["success" => false];
     } else if ($bUid === false) {

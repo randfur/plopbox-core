@@ -178,7 +178,7 @@ if (function_exists('valtoken')) {
     // Process File Entries
     if (isset($entries[0])) {
       $fkey = 0;
-      foreach (array_slice($entries, $fstart, $_SESSION['flimit']) as $file) {
+      foreach (array_slice($entries, $fstart, $flimit) as $file) {
         // Define the target file/folder
         $ftarget = $fspath . $file['item'];
         $link = $fullurl . '/' . urlencode($file['item']);
@@ -250,7 +250,7 @@ if (function_exists('valtoken')) {
       foreach ($fileOutput as $entry) {
         $output[] = $entry['item'];
       }
-      echo json_encode(array("opcode" => "FileIndex", "statcode" => "OK", "sort" => $sortscheme, "itemcount" => $itemcount, "flimit" => $_SESSION['flimit'], "fstart" => $fstart, "filedata" => $output));
+      echo json_encode(array("opcode" => "FileIndex", "statcode" => "OK", "sort" => $sortscheme, "itemcount" => $itemcount, "flimit" => $flimit, "fstart" => $fstart, "filedata" => $output));
       $logmsg .= ' INDEX CORE, OK: LISTING ' . $itemcount . ' ITEMS';
     }
   }

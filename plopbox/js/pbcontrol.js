@@ -6,204 +6,121 @@
 PlopBox
 Supervising Controller
 */
+"use strict";
 
-// Controller Object
-function controllerObject () {
-  var self = this;
-
-  // URI Navigator Object
-  function navigatorObject () {
+// Controller Object Constructor
+var ControllerConst = (function (model) {
+  function controllerObject (model) {
     var self = this;
-    this.args = [];
-    this.uri = "/pbindex.php";
 
-    // Add an Argument
-    this.addargs = function (values) {
-      for (key in values) {
-        for (i = self.args.length, len = values.length; i < len; i++) {
-          if (self.args.indexOf(values[i]) == -1) {
-            self.args.add(values[i]);
-          } else {
-            self.args[i] = values[i];
+    // URI Navigator Object Constructor
+    function navigatorObject () {
+      var self = this;
+      var uri = "/pbindex.php";
+      var args = {};
+
+      // Output the URL arguments
+      this.args = function () {
+        return args;
+      }
+
+      // Add a URL Argument
+      this.addArgs = function (values) {
+        for (var i = 0; i < values.length; i++) {
+          for (var arg in values[i]) {
+            args[arg] = values[i];
           };
         };
-      };
-    };
+      }
 
-    // Remove an Argument
-    this.removeargs = function (values) {
-      for (key in values) {
-        for (i = self.args.length, len = values.length; i < len; i++) {
-          if (key == self.args[i]) {
-            self.args.splice(i, 1);
+      // Remove a URL Argument
+      this.removeArgs = function (values) {
+        for (var arg in values) {
+          var exists = args.hasOwnProperty(arg);
+          if (exists == false) {
+            return;
+          } else if (exists == true) {
+            args.splice(arg, 1);
           };
         };
-      };
-    };
+      }
 
-    // Reset Navigator to default data
-    this.reset = function () {
-      self.args = [];
-      self.uri = "/pbindex.php";
-    };
+      // Reset Navigator to default data
+      this.reset = function () {
+        self.args = {};
+        uri = "/pbindex.php";
+      }
 
-    // Output the URI with or without Arguments
-    this.output = function (argsBool = false) {
-      if (argsBool = true) {
-        return $(this.uri + $(this.args).serialize()).tostring();
-      } else {
-        return this.uri;
-      };
-    };
+      // Output the URI with or without Arguments
+      this.uri = function () {
+        return uri;
+      }
+    }
 
-    // Decode and store a Session JWT
-    function jwtDecode (token) {
-      var dToken = jwt_decode(token);
-    };
+    // Create Navigator
+    this.nav = new navigatorObject();
 
     // GET Data from the server
-    this.getData = function () {
-      console.log("GetData= " + navigator.uri);
+    function getData (nav, model) {
+      console.log("GetData= " + nav.uri());
       $.ajax({
-        url: navigator.uri,
+        url: nav.uri(),
         type: "get",
-        data: $(navigator.args).serialize(),
+        headers: "",
+        data: $(nav.args()).serialize(),
         dataType: "json",
         timeout: 30000,
-        success: function (json)
-        {
+        success: function (json) {
           if (json.error) {
             console.log("Error communicating with the server! " + json.error);
           } else {
             console.log(json);
-            computeModel(json, navigator);
+            model.update(json);
           };
         }
       });
       return false;
-    };
+    }
 
     // POST Data from the server
-    this.postData = function (data = "") {
-      console.log("PostData= " + navigator.uri);
+    function postData (nav, model, data = "") {
+      console.log("PostData= " + nav.uri());
       $.ajax({
-        url: navigator.uri,
+        url: nav.uri(),
         type: "post",
         data: data,
         dataType: "json",
         timeout: 30000,
-        success: function (json)
-        {
+        success: function (json) {
           if (json.error) {
             console.log("Error communicating with the server! " + json.error);
           } else {
             console.log(json);
-            computeModel(json, navigator);
+            model.update(json);
           };
         }
       });
       return false;
-    };
-  };
-
-  // Initialize Model
-  this.navigator = navigator = new navigatorObject();
-  console.log(this.navigator.uri);
-  this.getData();
-};
-};
-
-// Assemble New Model Data
-function computeModel(pagedata, navigator) {
-  console.log("ComputeModel= " + navigator.uri);
-  // Tokens
-  // TODO: Tokens
-
-  // File Index
-  if (pagedata.opcode === 'FileIndex') {
-    if (pagedata.statcode == 'ViewDeny' || pagedata.statcode == 'Empty') {
-
-    } else {
-      // File Entry Object
-      function itemEntryObject (fileData, itemcount, ID, navigator) {
-        if (fileData['dir']) {
-          this.id = ID;
-          this.dir = filedata['dir'];
-          this.fileName = fileData['name'];
-          this.uri = navigator.uri + fileData['path'];
-          this.icon = fileData['ficon'];
-          this.modTime = fileData['mtime'];
-          this.size = fileData['fsize'];
-          this.sizefactor = fileData['fsizefactor'];
-          this.modTimeUX = filedata['mtimeux'];
-        } else {
-          this.id = ID;
-          this.dir = filedata['dir'];
-          this.fileName = fileData['name'];
-          this.uri = navigator.uri + fileData['path'];
-          this.icon = fileData['ficon'];
-          this.modTime = fileData['mtime'];
-          this.size = fileData['fsize'];
-          this.sizefactor = fileData['fsizefactor'];
-          this.modTimeUX = filedata['mtimeux'];
-        };
-        // Internal Functions
-        // Open File
-        this.open = function () {
-          getFile(self.uri);
-        };
-        // TODO: this.delete
-        // TODO: this.move
-      };
-
-      // Generate File Entries
-      for (i = 0; i < pagedata.itemcount; i++) {
-        pagedata.fileEntries[i] = new itemEntryObject(pagedata.filedata[i], pagedata.itemcount, i, navigator);
-      };
-    };
-
-    // Navbar
-    var uriarray = navigator.uri.split("/");
-    var lastnav = "";
-    for (i = 0, len = navigator.uri.length; i < len; i++) {
-      pagedata.navItems[i] = lastnav + "/" + uriarray[i];
-      lastnav =+ uriarray[i];
-    };
-
-    // Stage Model Data
-    var modelData = {
-      opcode: pagedata.opcode,
-      statcode: pagedata.statcode,
-      msg: pagedata.msg,
-      crow: pagedata.crow,
-      filedata: pagedata.filedata,
-      loc: pagedata.loc,
-      sort: pagedata.sort
-    };
-
-  } else if (pagedata.opcode == 'LoginPage') {
-    var modelData = {
-      opcode: pagedata.opcode,
-      statcode: pagedata.statcode,
-      token: pagedata.token,
-      msg: pagedata.msg,
     }
-  };
-  console.log(pagedata.opcode);
+  }
+  // Singleton Constructor Functions
+  var instance;
+  function createController (model) {
+    var object = new controllerObject(model);
+    return object;
+  }
 
-  // Send Model to View Presenter
-  pageView(modelData, navigator);
-};
+  return {
+    newController: function (model) {
+      if (!instance) {
+        return createController(model);
+      } else {
+        return;
+      }
+    }
+  }
+})(model);
 
-// Download a File from the Server
-function getFile(uri) {
-  console.log("Getting File: " + uri);
-};
-
-// Initial Page Load
-$(document).ready(
-  function() {
-    var controller = new controllerObject();
-  };
+// Get Initial Data
+getData(this.nav, model);
 }
-);
