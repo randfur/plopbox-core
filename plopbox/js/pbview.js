@@ -9,8 +9,8 @@ View Presenter
 "use strict";
 
 // View Object Constructor
-var ViewConst = (function (model, controller) {
-  function viewObject (model, controller) {
+var ViewConstructor = (function () {
+  function viewObject () {
     model.viewRef = this;
 
     // Check Model for Updated Data
@@ -195,33 +195,29 @@ var ViewConst = (function (model, controller) {
         });
       }
     }
+    console.log("View: I'm alive!");
   }
   // Singleton Constructor Functions
   var instance;
-  function createView (model, controller) {
-    var object = new viewObject(model, controller);
+  function createView () {
+    var object = new viewObject();
     return object;
   }
 
   return {
-    newView: function (model, controller) {
+    newView: function () {
       if (!instance) {
-        return createView(model, controller);
+        return createView();
       } else {
         return;
       }
     }
   }
-  })(model, controller);
+})(model, controller);
 
-  // Initial Page Load
-  $(
-    function () {
-      // Create Model
-      var model = new ModelConstructor.newModel();
-      // Create Controller
-      var controller = new ControllerConstructor.newController(model);
-      // Create View
-      var view = new ViewConstructor.newView(model, controller);
-    }
-  );
+$(
+  function () {
+    // Create View
+    var view = new ViewConstructor.newView(model, controller);
+  }
+);

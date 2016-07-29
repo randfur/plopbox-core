@@ -9,8 +9,8 @@ Supervising Controller
 "use strict";
 
 // Controller Object Constructor
-var ControllerConst = (function (model) {
-  function controllerObject (model) {
+var ControllerConstructor = (function () {
+  function controllerObject () {
     var self = this;
 
     // URI Navigator Object Constructor
@@ -102,18 +102,23 @@ var ControllerConst = (function (model) {
       });
       return false;
     }
+
+    // Get Initial Data
+    getData(this.nav, model);
+    console.log("Controller: I'm alive!");
   }
+
   // Singleton Constructor Functions
   var instance;
-  function createController (model) {
-    var object = new controllerObject(model);
+  function createController () {
+    var object = new controllerObject();
     return object;
   }
 
   return {
-    newController: function (model) {
+    newController: function () {
       if (!instance) {
-        return createController(model);
+        return createController();
       } else {
         return;
       }
@@ -121,6 +126,9 @@ var ControllerConst = (function (model) {
   }
 })(model);
 
-// Get Initial Data
-getData(this.nav, model);
-}
+$(
+  function () {
+    // Create Controller
+    var controller = new ControllerConstructor.newController(model);
+  }
+)
