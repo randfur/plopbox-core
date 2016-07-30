@@ -11,6 +11,7 @@ View Presenter
 var view = {
   // Check Model for Updated Data
   update: function(model, controller) {
+    // ?? pageData doesn't live on the model object.
     var pagedata = model.pagedata;
 
     // Login Page
