@@ -8,66 +8,60 @@ Supervising Controller
 */
 "use strict";
 
-// Controller Object Constructor
-var ControllerConstructor = (function () {
-  function controllerObject () {
-    var self = this;
+var controller = (function() {
+  var navigator = (function() {
+    var uri = "/pbindex.php";
+    var args = {};
 
-    // URI Navigator Object Constructor
-    function navigatorObject () {
-      var self = this;
-      var uri = "/pbindex.php";
-      var args = {};
-
+    return {
       // Output the URL arguments
-      this.args = function () {
+      args: function() {
         return args;
-      }
+      },
 
       // Add a URL Argument
-      this.addArgs = function (values) {
+      addArgs: function(values) {
         for (var i = 0; i < values.length; i++) {
           for (var arg in values[i]) {
             args[arg] = values[i];
-          };
-        };
-      }
+          }
+        }
+      },
 
       // Remove a URL Argument
-      this.removeArgs = function (values) {
+      removeArgs: function(values) {
         for (var arg in values) {
           var exists = args.hasOwnProperty(arg);
           if (exists == false) {
             return;
           } else if (exists == true) {
             args.splice(arg, 1);
-          };
-        };
-      }
-
+          }
+        }
+      },
+  
       // Reset Navigator to default data
-      this.reset = function () {
-        self.args = {};
+      reset function() {
+        args = {};
         uri = "/pbindex.php";
-      }
-
+      },
+  
       // Output the URI with or without Arguments
-      this.uri = function () {
+      uri: function() {
         return uri;
-      }
-    }
+      },
+    };
+  })();
 
-    // Create Navigator
-    this.nav = new navigatorObject();
-
+  return {
     // GET Data from the server
-    function getData (nav, model) {
-      console.log("GetData= " + nav.uri());
+    getData: function(model) {
+      console.log("GetData= " + navigator.uri());
       $.ajax({
-        url: nav.uri(),
+        url: navigator.uri(),
         type: "get",
         headers: "",
-        data: $(nav.args()).serialize(),
+        data: $(navigator.args()).serialize(),
         dataType: "json",
         timeout: 30000,
         success: function (json) {
@@ -80,13 +74,13 @@ var ControllerConstructor = (function () {
         }
       });
       return false;
-    }
-
+    },
+  
     // POST Data from the server
-    function postData (nav, model, data = "") {
-      console.log("PostData= " + nav.uri());
+    postData: function(model, data = "") {
+      console.log("PostData= " + navigator.uri());
       $.ajax({
-        url: nav.uri(),
+        url: navigator.uri(),
         type: "post",
         data: data,
         dataType: "json",
@@ -101,34 +95,10 @@ var ControllerConstructor = (function () {
         }
       });
       return false;
-    }
+    },
+  };
 
-    // Get Initial Data
-    getData(this.nav, model);
-    console.log("Controller: I'm alive!");
-  }
-
-  // Singleton Constructor Functions
-  var instance;
-  function createController () {
-    var object = new controllerObject();
-    return object;
-  }
-
-  return {
-    newController: function () {
-      if (!instance) {
-        return createController();
-      } else {
-        return;
-      }
-    }
-  }
-})(model);
-
-$(
-  function () {
-    // Create Controller
-    var controller = new ControllerConstructor.newController(model);
-  }
-)
+  // Get Initial Data
+  // We don't have access to model here, call this method from main() where we know about model.
+  //getData(model);
+})();
